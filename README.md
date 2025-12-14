@@ -1,16 +1,10 @@
-# flick_player
+# Flick Player
 
-A new Flutter project.
+Music player featuring a custom UAC 2.0 implementation based on Rust.
 
-## Getting Started
+## Features
 
-This project is a starting point for a Flutter application.
+- Custom USB Audio Class (UAC) 2.0 implementation
+- High-performance Rust backend
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Just wait for the next update. I am still making this. I'm not finished yet.
