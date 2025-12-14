@@ -62,17 +62,19 @@ class _MainShellState extends State<MainShell>
     super.initState();
     _navBarAnimationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 250),
+      duration: const Duration(
+        milliseconds: 280,
+      ), // Balanced: not too fast, not too slow
     );
     _navBarSlideAnimation =
         Tween<Offset>(
           begin: Offset.zero,
-          end: const Offset(0, 1.5), // Slide down to hide
+          end: const Offset(0, 1.15), // Subtle slide distance
         ).animate(
           CurvedAnimation(
             parent: _navBarAnimationController,
-            curve: Curves.easeOutCubic,
-            reverseCurve: Curves.easeInCubic,
+            curve: Curves.easeOutCubic, // Smooth, natural hide
+            reverseCurve: Curves.easeOutCubic, // Consistent smooth return
           ),
         );
 
@@ -157,8 +159,10 @@ class _MainShellState extends State<MainShell>
       backgroundColor: Colors.transparent,
       color: AppColors.surfaceLight.withValues(alpha: 0.9),
       buttonBackgroundColor: AppColors.accent,
-      animationDuration: const Duration(milliseconds: 250),
-      animationCurve: Curves.easeOutCubic,
+      animationDuration: const Duration(
+        milliseconds: 250,
+      ), // Balanced tab switching
+      animationCurve: Curves.easeOutCubic, // Smooth, consistent curve
       onTap: (index) {
         if (_currentIndex != index) {
           setState(() {

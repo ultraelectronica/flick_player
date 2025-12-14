@@ -221,7 +221,8 @@ class _OrbitScrollState extends State<OrbitScroll>
     // Calculate orbit parameters
     final orbitRadius = size.width * AppConstants.orbitRadiusRatio;
     final orbitCenterX = size.width * AppConstants.orbitCenterOffsetRatio;
-    final orbitCenterY = size.height / 2;
+    final orbitCenterY =
+        size.height * 0.42; // Higher on screen for better visibility
 
     return GestureDetector(
       onVerticalDragStart: _onVerticalDragStart,
