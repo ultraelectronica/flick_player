@@ -1,4 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Storage permissions for music library access -->
+    <!-- Legacy storage permission (Android 9 and below) -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <!-- Android 13+ media permission -->
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
     <application
         android:label="Flick"
         android:name="${applicationName}"

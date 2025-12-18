@@ -37,6 +37,13 @@ dependencies:
   rust_lib_flick_player:
     path: rust_builder
   salomon_bottom_bar: ^3.3.2
+  # Database
+  isar: ^3.1.0+1
+  isar_flutter_libs: ^3.1.0+1
+  # Utilities
+  path_provider: ^2.1.1
+  shared_preferences: ^2.2.2
+  permission_handler: ^11.1.0
 
 dev_dependencies:
   flutter_lints: ^6.0.0
@@ -44,6 +51,8 @@ dev_dependencies:
     sdk: flutter
   integration_test:
     sdk: flutter
+  isar_generator: ^3.1.0+1
+  build_runner: ^2.4.6
 
 flutter:
   uses-material-design: true
