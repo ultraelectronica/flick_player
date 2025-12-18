@@ -1,4 +1,4 @@
-package com.example.flick_player
+package com.ultraelectronica.flick
 
 import io.flutter.embedding.android.FlutterActivity
 

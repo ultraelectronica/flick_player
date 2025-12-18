@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flick_player/core/theme/app_colors.dart';
-import 'package:flick_player/core/constants/app_constants.dart';
-import 'package:flick_player/models/song.dart';
-import 'package:flick_player/features/songs/widgets/orbit_scroll.dart';
+import 'package:flick/core/theme/app_colors.dart';
+import 'package:flick/core/constants/app_constants.dart';
+import 'package:flick/models/song.dart';
+import 'package:flick/features/songs/widgets/orbit_scroll.dart';
 
 /// Main songs screen with orbital scrolling.
 class SongsScreen extends StatefulWidget {

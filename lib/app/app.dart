@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:flick_player/core/theme/app_theme.dart';
-import 'package:flick_player/core/theme/app_colors.dart';
-import 'package:flick_player/features/songs/screens/songs_screen.dart';
-import 'package:flick_player/features/menu/screens/menu_screen.dart';
-import 'package:flick_player/features/settings/screens/settings_screen.dart';
+import 'package:flick/core/theme/app_theme.dart';
+import 'package:flick/core/theme/app_colors.dart';
+import 'package:flick/features/songs/screens/songs_screen.dart';
+import 'package:flick/features/menu/screens/menu_screen.dart';
+import 'package:flick/features/settings/screens/settings_screen.dart';
 
 /// Main application widget for Flick Player.
 class FlickPlayerApp extends StatelessWidget {
