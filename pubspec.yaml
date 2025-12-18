@@ -29,7 +29,6 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   cupertino_icons: ^1.0.8
-  curved_navigation_bar: ^1.0.6
   flutter:
     sdk: flutter
   flutter_displaymode: ^0.7.0
@@ -37,6 +36,7 @@ dependencies:
   lucide_icons_flutter: ^3.1.8
   rust_lib_flick_player:
     path: rust_builder
+  salomon_bottom_bar: ^3.3.2
 
 dev_dependencies:
   flutter_lints: ^6.0.0

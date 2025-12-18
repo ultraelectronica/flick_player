@@ -1,4 +1,4 @@
-import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -54,8 +54,6 @@ class _MainShellState extends State<MainShell>
   // Animation controller for smoother nav bar transitions
   late final AnimationController _navBarAnimationController;
   late final Animation<Offset> _navBarSlideAnimation;
-
-  final GlobalKey<CurvedNavigationBarState> _bottomNavigationKey = GlobalKey();
 
   @override
   void initState() {
@@ -152,41 +150,55 @@ class _MainShellState extends State<MainShell>
   }
 
   Widget _buildNavigationBar() {
-    return CurvedNavigationBar(
-      key: _bottomNavigationKey,
-      index: _currentIndex,
-      height: 60.0,
-      backgroundColor: Colors.transparent,
-      color: AppColors.surfaceLight.withValues(alpha: 0.9),
-      buttonBackgroundColor: AppColors.accent,
-      animationDuration: const Duration(
-        milliseconds: 250,
-      ), // Balanced tab switching
-      animationCurve: Curves.easeOutCubic, // Smooth, consistent curve
-      onTap: (index) {
-        if (_currentIndex != index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        }
-      },
-      items: [
-        Icon(
-          LucideIcons.menu,
-          size: 24,
-          color: _currentIndex == 0 ? Colors.black : Colors.white,
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceLight.withValues(alpha: 0.95),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: SalomonBottomBar(
+          currentIndex: _currentIndex,
+          onTap: (index) {
+            if (_currentIndex != index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            }
+          },
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          itemPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          selectedItemColor: AppColors.accent,
+          unselectedItemColor: AppColors.textSecondary,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOutCubic,
+          items: [
+            SalomonBottomBarItem(
+              icon: const Icon(LucideIcons.menu, size: 22),
+              title: const Text('Menu'),
+              selectedColor: AppColors.accent,
+            ),
+            SalomonBottomBarItem(
+              icon: const Icon(LucideIcons.music, size: 22),
+              title: const Text('Songs'),
+              selectedColor: AppColors.accent,
+            ),
+            SalomonBottomBarItem(
+              icon: const Icon(LucideIcons.settings, size: 22),
+              title: const Text('Settings'),
+              selectedColor: AppColors.accent,
+            ),
+          ],
         ),
-        Icon(
-          LucideIcons.music,
-          size: 24,
-          color: _currentIndex == 1 ? Colors.black : Colors.white,
-        ),
-        Icon(
-          LucideIcons.settings,
-          size: 24,
-          color: _currentIndex == 2 ? Colors.black : Colors.white,
-        ),
-      ],
+      ),
     );
   }
 }
