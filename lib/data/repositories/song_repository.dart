@@ -25,6 +25,14 @@ class SongRepository {
     return entities.map(_entityToSong).toList();
   }
 
+  /// Get song entities by folder URI (internal use for scanning).
+  Future<List<SongEntity>> getSongEntitiesByFolder(String folderUri) async {
+    return await _isar.songEntitys
+        .filter()
+        .folderUriEqualTo(folderUri)
+        .findAll();
+  }
+
   /// Search songs by title, artist, or album.
   Future<List<Song>> searchSongs(String query) async {
     final lowerQuery = query.toLowerCase();
