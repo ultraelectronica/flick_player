@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:flick/core/theme/app_colors.dart';
@@ -31,6 +32,9 @@ class _SongsScreenState extends State<SongsScreen> {
   // Sorting
   SortOption _currentSort = SortOption.title;
 
+  // Timer for auto-play debounce
+  Timer? _debounceTimer;
+
   @override
   void initState() {
     super.initState();
@@ -57,6 +61,7 @@ class _SongsScreenState extends State<SongsScreen> {
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _player.dispose();
     super.dispose();
   }
@@ -106,6 +111,25 @@ class _SongsScreenState extends State<SongsScreen> {
     });
   }
 
+  Future<void> _playPreview(Song song) async {
+    try {
+      final path = song.filePath;
+      if (path == null) return;
+
+      // If already playing this song, do nothing (maintain playback)
+      if (_playingFilePath == path && _isPlaying) return;
+
+      // Use AudioSource.uri to handle both file:// and content:// correctly
+      await _player.setAudioSource(AudioSource.uri(Uri.parse(path)));
+      await _player.play();
+      setState(() {
+        _playingFilePath = path;
+      });
+    } catch (e) {
+      debugPrint("Error playing preview: $e");
+    }
+  }
+
   Future<void> _togglePreview(Song song) async {
     try {
       final path = song.filePath;
@@ -114,7 +138,8 @@ class _SongsScreenState extends State<SongsScreen> {
       if (_playingFilePath == path && _isPlaying) {
         await _player.pause();
       } else {
-        await _player.setFilePath(path);
+        // Use AudioSource.uri to handle both file:// and content:// correctly
+        await _player.setAudioSource(AudioSource.uri(Uri.parse(path)));
         await _player.play();
         setState(() {
           _playingFilePath = path;
@@ -160,10 +185,21 @@ class _SongsScreenState extends State<SongsScreen> {
                             setState(() {
                               _selectedIndex = index;
                             });
+
+                            // Auto-play preview with debounce
+                            _debounceTimer?.cancel();
+                            _debounceTimer = Timer(
+                              const Duration(milliseconds: 800),
+                              () {
+                                if (mounted && index < _songs.length) {
+                                  _playPreview(_songs[index]);
+                                }
+                              },
+                            );
                           },
                           onSongSelected: (index) {
                             if (_selectedIndex == index) {
-                              // Tap on already selected song -> Preview
+                              // Tap on already selected song -> Toggle Preview
                               _togglePreview(_songs[index]);
                             } else {
                               setState(() {

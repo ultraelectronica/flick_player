@@ -111,7 +111,13 @@ class LibraryScannerService {
         // SongEntity.lastModified is DateTime.
 
         final existingTime = existing.lastModified?.millisecondsSinceEpoch ?? 0;
-        if (file.lastModified != existingTime) {
+
+        // Check for modification OR missing new metadata (Album Art / Bitrate)
+        // This forces a rescan for files that haven't changed but need new fields.
+        final missingMetadata =
+            existing.albumArtPath == null && existing.bitrate == null;
+
+        if (file.lastModified != existingTime || missingMetadata) {
           urisToProcess.add(file.uri);
         }
       }
@@ -165,8 +171,7 @@ class LibraryScannerService {
           ..album = meta.album ?? 'Unknown Album'
           ..durationMs = meta.duration ?? 0
           ..fileType = basic.extension.toUpperCase()
-          ..dateAdded =
-              DateTime.now() // TODO: Keep existing dateAdded if updating?
+          ..dateAdded = existingMap[basic.uri]?.dateAdded ?? DateTime.now()
           ..lastModified = DateTime.fromMillisecondsSinceEpoch(
             basic.lastModified,
           )
@@ -175,10 +180,9 @@ class LibraryScannerService {
           ..albumArtPath = meta.albumArtPath
           ..bitrate = meta.bitrate != null ? int.tryParse(meta.bitrate!) : null;
 
-        // Restore dateAdded if updating
+        // Restore ID if updating
         if (existingMap.containsKey(basic.uri)) {
-          song.dateAdded = existingMap[basic.uri]!.dateAdded;
-          song.id = existingMap[basic.uri]!.id; // Preserve ID for update
+          song.id = existingMap[basic.uri]!.id;
         }
 
         batch.add(song);
@@ -232,8 +236,15 @@ class LibraryScannerService {
     // 1. Fetch existing file state from DB
     final existingSongs = await _songRepository.getAllSongEntities();
     final knownFiles = <String, int>{};
+    final existingMap = <String, SongEntity>{};
+
     for (var song in existingSongs) {
-      if (song.lastModified != null) {
+      existingMap[song.filePath] = song;
+      // Only consider file "known" (up to date) if it has new metadata fields.
+      // Otherwise, exclude it so Rust scanner treats it as new and extracts metadata.
+      final hasMetadata = song.albumArtPath != null || song.bitrate != null;
+
+      if (song.lastModified != null && hasMetadata) {
         // Rust expects seconds for comparison usually, or matches implementation
         // ScanResult sends back lastModified in seconds usually, let's check.
         // Rust side: `known_files.get(&path_str)` ... `modified > known_timestamp`
@@ -265,6 +276,8 @@ class LibraryScannerService {
     for (final metadata in result.newOrModified) {
       if (_isCancelled) break;
 
+      final existing = existingMap[metadata.path];
+
       final song = SongEntity()
         ..filePath = metadata.path
         ..title =
@@ -276,11 +289,15 @@ class LibraryScannerService {
             ? (metadata.durationSecs! * BigInt.from(1000)).toInt()
             : 0
         ..fileType = metadata.format.toUpperCase()
-        ..dateAdded = DateTime.now()
+        ..dateAdded = existing?.dateAdded ?? DateTime.now()
         ..lastModified = DateTime.fromMillisecondsSinceEpoch(
           metadata.lastModified * 1000,
         )
         ..folderUri = folderUri;
+
+      if (existing != null) {
+        song.id = existing.id;
+      }
 
       batch.add(song);
       processed++;
