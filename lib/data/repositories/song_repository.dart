@@ -152,6 +152,7 @@ class SongRepository {
       resolution: _buildResolutionString(entity),
       album: entity.album,
       filePath: entity.filePath,
+      dateAdded: entity.dateAdded,
     );
   }
 

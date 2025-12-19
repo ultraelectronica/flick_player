@@ -198,6 +198,7 @@ class MainActivity: FlutterActivity() {
     private fun extractMetadataForFiles(uris: List<String>): List<Map<String, Any?>> {
         val retriever = MediaMetadataRetriever()
         val result = mutableListOf<Map<String, Any?>>()
+        val cacheDir = cacheDir
 
         for (uriString in uris) {
             try {
@@ -209,10 +210,32 @@ class MainActivity: FlutterActivity() {
                 metadata["title"] = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE)
                 metadata["artist"] = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST)
                 metadata["album"] = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM)
+                metadata["bitrate"] = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE)
+                metadata["mimeType"] = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE)
                 
                 val durationStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
                 if (durationStr != null) {
                     metadata["duration"] = durationStr.toLongOrNull()
+                }
+
+                // Extract Album Art
+                val embeddedArt = retriever.embeddedPicture
+                if (embeddedArt != null) {
+                    try {
+                        // Use MD5 of URI as filename to avoid collisions and invalid chars
+                        val filename = java.math.BigInteger(1, java.security.MessageDigest.getInstance("MD5").digest(uriString.toByteArray())).toString(16) + ".jpg"
+                        val file = java.io.File(cacheDir, filename)
+                        
+                        // Only write if not exists or maybe overwrite? 
+                        // For performance, check existence. 
+                        // But what if art changed? (Unlikely for same URI without modified time change, but we assume immutable for now)
+                        if (!file.exists()) {
+                            file.writeBytes(embeddedArt)
+                        }
+                        metadata["albumArtPath"] = file.absolutePath
+                    } catch (e: Exception) {
+                        // Failed to save art
+                    }
                 }
 
                 result.add(metadata)

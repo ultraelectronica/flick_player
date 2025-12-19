@@ -14,6 +14,8 @@ class AudioFileInfo {
   final String? artist;
   final String? album;
   final int? duration;
+  final String? albumArtPath;
+  final String? bitrate;
 
   AudioFileInfo({
     required this.uri,
@@ -26,6 +28,8 @@ class AudioFileInfo {
     this.artist,
     this.album,
     this.duration,
+    this.albumArtPath,
+    this.bitrate,
   });
 
   factory AudioFileInfo.fromMap(Map<String, dynamic> map) {
@@ -44,6 +48,8 @@ class AudioFileInfo {
       duration: map['duration'] != null
           ? (map['duration'] as num).toInt()
           : null,
+      albumArtPath: map['albumArtPath'] as String?,
+      bitrate: map['bitrate'] as String?,
     );
   }
 }

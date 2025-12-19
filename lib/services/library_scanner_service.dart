@@ -171,7 +171,9 @@ class LibraryScannerService {
             basic.lastModified,
           )
           ..folderUri = folderUri
-          ..fileSize = basic.size;
+          ..fileSize = basic.size
+          ..albumArtPath = meta.albumArtPath
+          ..bitrate = meta.bitrate != null ? int.tryParse(meta.bitrate!) : null;
 
         // Restore dateAdded if updating
         if (existingMap.containsKey(basic.uri)) {
