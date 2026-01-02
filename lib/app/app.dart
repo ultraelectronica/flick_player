@@ -11,6 +11,9 @@ import 'package:flick/features/menu/screens/menu_screen.dart';
 import 'package:flick/features/settings/screens/settings_screen.dart';
 import 'package:flick/features/player/widgets/mini_player.dart';
 import 'package:flick/core/constants/app_constants.dart';
+import 'package:flick/models/song.dart';
+import 'package:flick/services/player_service.dart';
+import 'package:flick/features/player/widgets/ambient_background.dart';
 
 /// Main application widget for Flick Player.
 class FlickPlayerApp extends StatelessWidget {
@@ -50,6 +53,7 @@ enum NavDestination { menu, songs, settings }
 class _MainShellState extends State<MainShell>
     with SingleTickerProviderStateMixin {
   int _currentIndex = 1; // Default to songs (middle)
+  final PlayerService _playerService = PlayerService();
 
   // Use ValueNotifier for nav bar visibility to avoid full widget rebuilds
   final ValueNotifier<bool> _isNavBarVisible = ValueNotifier(true);
@@ -124,6 +128,16 @@ class _MainShellState extends State<MainShell>
         onNotification: _handleScrollNotification,
         child: Stack(
           children: [
+            // Persistent Background
+            Positioned.fill(
+              child: ValueListenableBuilder<Song?>(
+                valueListenable: _playerService.currentSongNotifier,
+                builder: (context, song, _) {
+                  return AmbientBackground(song: song);
+                },
+              ),
+            ),
+
             // Main content area with IndexedStack for faster tab switching
             // Adjusted padding to ensure content isn't hidden behind MiniPlayer
             IndexedStack(

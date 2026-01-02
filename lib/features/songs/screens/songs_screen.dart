@@ -116,48 +116,45 @@ class _SongsScreenState extends State<SongsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(gradient: AppColors.backgroundGradient),
-      child: Stack(
-        children: [
-          // Background ambient effects
-          _buildAmbientBackground(),
+    return Stack(
+      children: [
+        // Background ambient effects
+        _buildAmbientBackground(),
 
-          // Main content
-          SafeArea(
-            bottom: false,
-            child: Column(
-              children: [
-                // Header
-                _buildHeader(),
+        // Main content
+        SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              // Header
+              _buildHeader(),
 
-                // Content based on state
-                Expanded(
-                  child: _isLoading
-                      ? _buildLoadingState()
-                      : _songs.isEmpty
-                      ? _buildEmptyState()
-                      : OrbitScroll(
-                          songs: _songs,
-                          selectedIndex: _selectedIndex,
-                          onSelectedIndexChanged: (index) {
-                            setState(() {
-                              _selectedIndex = index;
-                            });
-                          },
-                          onSongSelected: (index) {
-                            _playSong(_songs[index]);
-                          },
-                        ),
-                ),
+              // Content based on state
+              Expanded(
+                child: _isLoading
+                    ? _buildLoadingState()
+                    : _songs.isEmpty
+                    ? _buildEmptyState()
+                    : OrbitScroll(
+                        songs: _songs,
+                        selectedIndex: _selectedIndex,
+                        onSelectedIndexChanged: (index) {
+                          setState(() {
+                            _selectedIndex = index;
+                          });
+                        },
+                        onSongSelected: (index) {
+                          _playSong(_songs[index]);
+                        },
+                      ),
+              ),
 
-                // Space for nav bar & mini player
-                const SizedBox(height: AppConstants.navBarHeight + 90),
-              ],
-            ),
+              // Space for nav bar & mini player
+              const SizedBox(height: AppConstants.navBarHeight + 90),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

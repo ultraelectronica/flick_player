@@ -5,6 +5,7 @@ import 'package:flick/core/theme/app_colors.dart';
 import 'package:flick/models/song.dart';
 import 'package:flick/services/player_service.dart';
 import 'package:flick/features/player/widgets/waveform_seek_bar.dart';
+import 'package:flick/features/player/widgets/ambient_background.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:just_audio/just_audio.dart';
 
@@ -60,23 +61,8 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
               },
               child: Stack(
                 children: [
-                  // Ambient background using album art blur
-                  if (song.albumArt != null)
-                    Positioned.fill(
-                      child: Image.file(
-                        File(song.albumArt!),
-                        fit: BoxFit.cover,
-                        opacity: const AlwaysStoppedAnimation(0.3),
-                      ),
-                    ),
-                  Positioned.fill(
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 60, sigmaY: 60),
-                      child: Container(
-                        color: AppColors.background.withValues(alpha: 0.8),
-                      ),
-                    ),
-                  ),
+                  // Ambient background
+                  AmbientBackground(song: song),
 
                   SafeArea(
                     child: Column(
