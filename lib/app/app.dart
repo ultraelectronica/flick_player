@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -134,12 +135,27 @@ class _MainShellState extends State<MainShell>
               ],
             ),
 
-            // Mini Player above Nav Bar
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: AppConstants.navBarHeight + 24, // Place above nav bar
-              child: const MiniPlayer(),
+            // Mini Player with animated position
+            AnimatedBuilder(
+              animation: _navBarAnimationController,
+              builder: (context, child) {
+                // Controller 0.0 (Visible) -> Bottom: NavBarHeight + 24
+                // Controller 1.0 (Hidden)  -> Bottom: 24 (just margin)
+                final double bottom =
+                    lerpDouble(
+                      AppConstants.navBarHeight + 24,
+                      24,
+                      _navBarAnimationController.value,
+                    ) ??
+                    24;
+
+                return Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: bottom,
+                  child: const MiniPlayer(),
+                );
+              },
             ),
 
             // Navigation bar with isolated repaints

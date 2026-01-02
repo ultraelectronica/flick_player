@@ -47,6 +47,9 @@ class _MiniPlayerState extends State<MiniPlayer> {
                         child: child,
                       );
                     },
+                transitionDuration: const Duration(milliseconds: 300),
+                opaque: false, // Important for Hero
+                barrierColor: Colors.black, // Or transparent
               ),
             );
           },
