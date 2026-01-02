@@ -231,9 +231,10 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                                               offset: Offset(offset, 0),
                                               child: Padding(
                                                 padding: const EdgeInsets.symmetric(
-                                                  vertical: 40,
+                                                  vertical: 10,
                                                 ), // Padding for controls space
                                                 child: WaveformSeekBar(
+                                                  barCount: 300,
                                                   position: position,
                                                   duration: duration,
                                                   onChanged: (newPos) {
@@ -254,122 +255,144 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
 
                               // Controls Layer (Overlay)
                               Center(
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      // Shuffle
-                                      ValueListenableBuilder<bool>(
-                                        valueListenable:
-                                            _playerService.isShuffleNotifier,
-                                        builder: (context, isShuffle, _) {
-                                          return IconButton(
-                                            onPressed: () =>
-                                                _playerService.toggleShuffle(),
-                                            icon: Icon(
-                                              LucideIcons.shuffle,
-                                              size: 20,
-                                              color: isShuffle
-                                                  ? AppColors.accent
-                                                  : AppColors.textTertiary,
-                                            ),
-                                          );
-                                        },
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(50),
+                                  child: BackdropFilter(
+                                    filter: ImageFilter.blur(
+                                      sigmaX: 16,
+                                      sigmaY: 16,
+                                    ),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 8,
                                       ),
-
-                                      // Previous
-                                      IconButton(
-                                        onPressed: () =>
-                                            _playerService.previous(),
-                                        iconSize: 28,
-                                        icon: const Icon(
-                                          LucideIcons.skipBack,
-                                          color: AppColors.textPrimary,
-                                        ),
-                                      ),
-
-                                      // Play/Pause
-                                      ValueListenableBuilder<bool>(
-                                        valueListenable:
-                                            _playerService.isPlayingNotifier,
-                                        builder: (context, isPlaying, _) {
-                                          return Container(
-                                            width: 64,
-                                            height: 64,
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color: AppColors.accent,
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: AppColors.accent
-                                                      .withValues(alpha: 0.4),
-                                                  blurRadius: 24,
-                                                  offset: const Offset(0, 8),
+                                      color: const Color(
+                                        0xFF121212,
+                                      ).withValues(alpha: 0.6),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceEvenly,
+                                        children: [
+                                          // Shuffle
+                                          ValueListenableBuilder<bool>(
+                                            valueListenable: _playerService
+                                                .isShuffleNotifier,
+                                            builder: (context, isShuffle, _) {
+                                              return IconButton(
+                                                onPressed: () => _playerService
+                                                    .toggleShuffle(),
+                                                icon: Icon(
+                                                  LucideIcons.shuffle,
+                                                  size: 20,
+                                                  color: isShuffle
+                                                      ? AppColors.accent
+                                                      : AppColors.textTertiary,
                                                 ),
-                                              ],
-                                            ),
-                                            child: IconButton(
-                                              onPressed: () => _playerService
-                                                  .togglePlayPause(),
-                                              iconSize: 28,
-                                              icon: Icon(
-                                                isPlaying
-                                                    ? LucideIcons.pause
-                                                    : LucideIcons.play,
-                                                color: Colors.white,
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      ),
+                                              );
+                                            },
+                                          ),
 
-                                      // Next
-                                      IconButton(
-                                        onPressed: () => _playerService.next(),
-                                        iconSize: 28,
-                                        icon: const Icon(
-                                          LucideIcons.skipForward,
-                                          color: AppColors.textPrimary,
-                                        ),
-                                      ),
-
-                                      // Loop
-                                      ValueListenableBuilder<LoopMode>(
-                                        valueListenable:
-                                            _playerService.loopModeNotifier,
-                                        builder: (context, loopMode, _) {
-                                          IconData icon;
-                                          Color color;
-                                          switch (loopMode) {
-                                            case LoopMode.off:
-                                              icon = LucideIcons.repeat;
-                                              color = AppColors.textTertiary;
-                                              break;
-                                            case LoopMode.all:
-                                              icon = LucideIcons.repeat;
-                                              color = AppColors.accent;
-                                              break;
-                                            case LoopMode.one:
-                                              icon = LucideIcons.repeat1;
-                                              color = AppColors.accent;
-                                              break;
-                                          }
-                                          return IconButton(
+                                          // Previous
+                                          IconButton(
                                             onPressed: () =>
-                                                _playerService.toggleLoopMode(),
-                                            icon: Icon(
-                                              icon,
-                                              size: 20,
-                                              color: color,
+                                                _playerService.previous(),
+                                            iconSize: 28,
+                                            icon: const Icon(
+                                              LucideIcons.skipBack,
+                                              color: AppColors.textPrimary,
                                             ),
-                                          );
-                                        },
+                                          ),
+
+                                          // Play/Pause
+                                          ValueListenableBuilder<bool>(
+                                            valueListenable: _playerService
+                                                .isPlayingNotifier,
+                                            builder: (context, isPlaying, _) {
+                                              return Container(
+                                                width: 64,
+                                                height: 64,
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  color: AppColors.accent,
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: AppColors.accent
+                                                          .withValues(
+                                                            alpha: 0.4,
+                                                          ),
+                                                      blurRadius: 24,
+                                                      offset: const Offset(
+                                                        0,
+                                                        8,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: IconButton(
+                                                  onPressed: () =>
+                                                      _playerService
+                                                          .togglePlayPause(),
+                                                  iconSize: 28,
+                                                  icon: Icon(
+                                                    isPlaying
+                                                        ? LucideIcons.pause
+                                                        : LucideIcons.play,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+
+                                          // Next
+                                          IconButton(
+                                            onPressed: () =>
+                                                _playerService.next(),
+                                            iconSize: 28,
+                                            icon: const Icon(
+                                              LucideIcons.skipForward,
+                                              color: AppColors.textPrimary,
+                                            ),
+                                          ),
+
+                                          // Loop
+                                          ValueListenableBuilder<LoopMode>(
+                                            valueListenable:
+                                                _playerService.loopModeNotifier,
+                                            builder: (context, loopMode, _) {
+                                              IconData icon;
+                                              Color color;
+                                              switch (loopMode) {
+                                                case LoopMode.off:
+                                                  icon = LucideIcons.repeat;
+                                                  color =
+                                                      AppColors.textTertiary;
+                                                  break;
+                                                case LoopMode.all:
+                                                  icon = LucideIcons.repeat;
+                                                  color = AppColors.accent;
+                                                  break;
+                                                case LoopMode.one:
+                                                  icon = LucideIcons.repeat1;
+                                                  color = AppColors.accent;
+                                                  break;
+                                              }
+                                              return IconButton(
+                                                onPressed: () => _playerService
+                                                    .toggleLoopMode(),
+                                                icon: Icon(
+                                                  icon,
+                                                  size: 20,
+                                                  color: color,
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ],
                                       ),
-                                    ],
+                                    ),
                                   ),
                                 ),
                               ),

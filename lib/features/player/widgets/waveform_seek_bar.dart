@@ -14,7 +14,10 @@ class WaveformSeekBar extends StatefulWidget {
     required this.duration,
     required this.onChanged,
     this.onChangeEnd,
+    this.barCount = 60,
   });
+
+  final int barCount;
 
   @override
   State<WaveformSeekBar> createState() => _WaveformSeekBarState();
@@ -23,6 +26,8 @@ class WaveformSeekBar extends StatefulWidget {
 class _WaveformSeekBarState extends State<WaveformSeekBar> {
   // Cache the waveform data so it doesn't jitter on rebuilds
   late List<double> _waveformData;
+  Duration? _dragStartDuration;
+  double? _dragStartX;
 
   @override
   void initState() {
@@ -43,32 +48,47 @@ class _WaveformSeekBarState extends State<WaveformSeekBar> {
     // Generate pseudo-random bar heights based on duration to be deterministic for the same song
     final random = Random(widget.duration.inMilliseconds);
     _waveformData = List.generate(
-      60,
+      widget.barCount,
       (index) => 0.3 + random.nextDouble() * 0.7,
     );
   }
 
-  void _startDrag(DragStartDetails details, BoxConstraints constraints) {
-    _updatePosition(details.localPosition.dx, constraints);
+  void _onDragStart(DragStartDetails details) {
+    _dragStartDuration = widget.position;
+    _dragStartX = details.localPosition.dx;
   }
 
-  void _updateDrag(DragUpdateDetails details, BoxConstraints constraints) {
-    _updatePosition(details.localPosition.dx, constraints);
+  void _onDragUpdate(DragUpdateDetails details, BoxConstraints constraints) {
+    if (_dragStartDuration == null || _dragStartX == null) return;
+
+    final width = constraints.maxWidth;
+    final deltaX = details.localPosition.dx - _dragStartX!;
+    final progressDelta = deltaX / width;
+
+    // Inversed dragging for scrolling effect
+    final newMs =
+        _dragStartDuration!.inMilliseconds -
+        (progressDelta * widget.duration.inMilliseconds);
+
+    final clampedMs = newMs.clamp(0, widget.duration.inMilliseconds).round();
+    widget.onChanged(Duration(milliseconds: clampedMs));
   }
 
-  void _endDrag(DragEndDetails details, BoxConstraints constraints) {
+  void _onDragEnd(DragEndDetails details) {
     if (widget.onChangeEnd != null) {
       widget.onChangeEnd!(widget.position);
     }
+    _dragStartDuration = null;
+    _dragStartX = null;
   }
 
-  void _updatePosition(double dx, BoxConstraints constraints) {
+  void _onTapUp(TapUpDetails details, BoxConstraints constraints) {
     final width = constraints.maxWidth;
-    final progress = (dx / width).clamp(0.0, 1.0);
-    final newPosition = Duration(
-      milliseconds: (progress * widget.duration.inMilliseconds).round(),
-    );
-    widget.onChanged(newPosition);
+    final progress = (details.localPosition.dx / width).clamp(0.0, 1.0);
+    final ms = (progress * widget.duration.inMilliseconds).round();
+    final newPos = Duration(milliseconds: ms);
+    widget.onChanged(newPos);
+    widget.onChangeEnd?.call(newPos);
   }
 
   @override
@@ -76,22 +96,14 @@ class _WaveformSeekBarState extends State<WaveformSeekBar> {
     return LayoutBuilder(
       builder: (context, constraints) {
         return GestureDetector(
-          onHorizontalDragStart: (details) => _startDrag(details, constraints),
+          onHorizontalDragStart: _onDragStart,
           onHorizontalDragUpdate: (details) =>
-              _updateDrag(details, constraints),
-          onHorizontalDragEnd: (details) => _endDrag(details, constraints),
-          onTapDown: (details) => _startDrag(
-            DragStartDetails(localPosition: details.localPosition),
-            constraints,
-          ),
-          onTapUp: (details) {
-            if (widget.onChangeEnd != null) {
-              widget.onChangeEnd!(widget.position);
-            }
-          },
-          behavior: HitTestBehavior.opaque, // touch anywhere in the area
+              _onDragUpdate(details, constraints),
+          onHorizontalDragEnd: _onDragEnd,
+          onTapUp: (details) => _onTapUp(details, constraints),
+          behavior: HitTestBehavior.opaque,
           child: SizedBox(
-            height: 50,
+            height: 120, // Increased height
             width: double.infinity,
             child: CustomPaint(
               painter: _WaveformPainter(
@@ -128,7 +140,7 @@ class _WaveformPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final barCount = waveformData.length;
     // Spacing between bars
-    final spacing = 4.0;
+    final spacing = 2.0;
     // Calculate total available width for bars (width - total spacing)
     final totalSpacing = (barCount - 1) * spacing;
     final barWidth = (size.width - totalSpacing) / barCount;
