@@ -30,7 +30,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
             Navigator.of(context).push(
               PageRouteBuilder(
                 pageBuilder: (context, animation, secondaryAnimation) =>
-                    const FullPlayerScreen(),
+                    FullPlayerScreen(heroTag: 'song_art_${song.id}'),
                 transitionsBuilder:
                     (context, animation, secondaryAnimation, child) {
                       const begin = Offset(0.0, 1.0);
@@ -100,7 +100,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                     children: [
                       // Album Art
                       Hero(
-                        tag: 'album_art_hero',
+                        tag: 'mini_player_art',
                         child: Container(
                           width: 64,
                           height: 64,

@@ -9,7 +9,8 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:just_audio/just_audio.dart';
 
 class FullPlayerScreen extends StatefulWidget {
-  const FullPlayerScreen({super.key});
+  final Object heroTag;
+  const FullPlayerScreen({super.key, this.heroTag = 'album_art_hero'});
 
   @override
   State<FullPlayerScreen> createState() => _FullPlayerScreenState();
@@ -121,40 +122,39 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
 
                         // Hero Album Art
                         Hero(
-                          tag: 'album_art_hero',
-                          child: AspectRatio(
-                            aspectRatio: 1,
-                            child: Container(
-                              margin: const EdgeInsets.symmetric(
-                                horizontal: 48,
-                              ),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(24),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.3),
-                                    blurRadius: 32,
-                                    offset: const Offset(0, 16),
-                                  ),
-                                ],
-                                image: song.albumArt != null
-                                    ? DecorationImage(
-                                        image: FileImage(File(song.albumArt!)),
-                                        fit: BoxFit.cover,
-                                      )
-                                    : null,
-                              ),
-                              child: song.albumArt == null
-                                  ? Container(
-                                      color: AppColors.glassBackgroundStrong,
-                                      child: const Icon(
-                                        LucideIcons.music,
-                                        size: 64,
-                                        color: AppColors.textTertiary,
-                                      ),
+                          tag: widget.heroTag,
+                          child: Container(
+                            width: MediaQuery.of(context).size.width * 0.85,
+                            height: MediaQuery.of(context).size.width * 0.85,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(40),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.3),
+                                  blurRadius: 32,
+                                  offset: const Offset(0, 16),
+                                ),
+                              ],
+                              image: song.albumArt != null
+                                  ? DecorationImage(
+                                      image: FileImage(File(song.albumArt!)),
+                                      fit: BoxFit.cover,
                                     )
                                   : null,
                             ),
+                            child: song.albumArt == null
+                                ? Container(
+                                    decoration: BoxDecoration(
+                                      color: AppColors.glassBackgroundStrong,
+                                      borderRadius: BorderRadius.circular(40),
+                                    ),
+                                    child: const Icon(
+                                      LucideIcons.music,
+                                      size: 80,
+                                      color: AppColors.textTertiary,
+                                    ),
+                                  )
+                                : null,
                           ),
                         ),
                         const SizedBox(height: 48),
@@ -189,173 +189,241 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
 
                         const Spacer(),
 
-                        // Waveform Seek Bar
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          child: ValueListenableBuilder<Duration>(
-                            valueListenable: _playerService.positionNotifier,
-                            builder: (context, position, _) {
-                              return ValueListenableBuilder<Duration>(
-                                valueListenable:
-                                    _playerService.durationNotifier,
-                                builder: (context, duration, _) {
-                                  return Column(
+                        const Spacer(),
+
+                        // Scrolling Waveform & Controls
+                        SizedBox(
+                          height: 160,
+                          child: Stack(
+                            children: [
+                              // Waveform Layer
+                              Positioned.fill(
+                                child: ValueListenableBuilder<Duration>(
+                                  valueListenable:
+                                      _playerService.positionNotifier,
+                                  builder: (context, position, _) {
+                                    return ValueListenableBuilder<Duration>(
+                                      valueListenable:
+                                          _playerService.durationNotifier,
+                                      builder: (context, duration, _) {
+                                        if (duration.inMilliseconds == 0) {
+                                          return const SizedBox();
+                                        }
+
+                                        final screenWidth = MediaQuery.of(
+                                          context,
+                                        ).size.width;
+                                        final waveWidth = screenWidth * 4;
+                                        final progress =
+                                            position.inMilliseconds /
+                                            duration.inMilliseconds;
+                                        // Center the playhead
+                                        final offset =
+                                            -(progress * waveWidth) +
+                                            (screenWidth / 2);
+
+                                        return ClipRect(
+                                          child: OverflowBox(
+                                            maxWidth: waveWidth,
+                                            minWidth: waveWidth,
+                                            alignment: Alignment.centerLeft,
+                                            child: Transform.translate(
+                                              offset: Offset(offset, 0),
+                                              child: Padding(
+                                                padding: const EdgeInsets.symmetric(
+                                                  vertical: 40,
+                                                ), // Padding for controls space
+                                                child: WaveformSeekBar(
+                                                  position: position,
+                                                  duration: duration,
+                                                  onChanged: (newPos) {
+                                                    // Seeking on a scrolling waveform is tricky visually
+                                                    // Standard seek might feel weird if it jumps
+                                                    _playerService.seek(newPos);
+                                                  },
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  },
+                                ),
+                              ),
+
+                              // Controls Layer (Overlay)
+                              Center(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
                                     children: [
-                                      WaveformSeekBar(
-                                        position: position,
-                                        duration: duration,
-                                        onChanged: (newPos) {
-                                          _playerService.seek(newPos);
+                                      // Shuffle
+                                      ValueListenableBuilder<bool>(
+                                        valueListenable:
+                                            _playerService.isShuffleNotifier,
+                                        builder: (context, isShuffle, _) {
+                                          return IconButton(
+                                            onPressed: () =>
+                                                _playerService.toggleShuffle(),
+                                            icon: Icon(
+                                              LucideIcons.shuffle,
+                                              size: 20,
+                                              color: isShuffle
+                                                  ? AppColors.accent
+                                                  : AppColors.textTertiary,
+                                            ),
+                                          );
                                         },
                                       ),
-                                      const SizedBox(height: 8),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            _formatDuration(position),
-                                            style: const TextStyle(
-                                              fontFamily: 'ProductSans',
-                                              fontSize: 12,
-                                              color: AppColors.textTertiary,
-                                              fontFeatures: [
-                                                FontFeature.tabularFigures(),
+
+                                      // Previous
+                                      IconButton(
+                                        onPressed: () =>
+                                            _playerService.previous(),
+                                        iconSize: 28,
+                                        icon: const Icon(
+                                          LucideIcons.skipBack,
+                                          color: AppColors.textPrimary,
+                                        ),
+                                      ),
+
+                                      // Play/Pause
+                                      ValueListenableBuilder<bool>(
+                                        valueListenable:
+                                            _playerService.isPlayingNotifier,
+                                        builder: (context, isPlaying, _) {
+                                          return Container(
+                                            width: 64,
+                                            height: 64,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: AppColors.accent,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: AppColors.accent
+                                                      .withValues(alpha: 0.4),
+                                                  blurRadius: 24,
+                                                  offset: const Offset(0, 8),
+                                                ),
                                               ],
                                             ),
-                                          ),
-                                          Text(
-                                            _formatDuration(duration),
-                                            style: const TextStyle(
-                                              fontFamily: 'ProductSans',
-                                              fontSize: 12,
-                                              color: AppColors.textTertiary,
-                                              fontFeatures: [
-                                                FontFeature.tabularFigures(),
-                                              ],
+                                            child: IconButton(
+                                              onPressed: () => _playerService
+                                                  .togglePlayPause(),
+                                              iconSize: 28,
+                                              icon: Icon(
+                                                isPlaying
+                                                    ? LucideIcons.pause
+                                                    : LucideIcons.play,
+                                                color: Colors.white,
+                                              ),
                                             ),
-                                          ),
-                                        ],
+                                          );
+                                        },
+                                      ),
+
+                                      // Next
+                                      IconButton(
+                                        onPressed: () => _playerService.next(),
+                                        iconSize: 28,
+                                        icon: const Icon(
+                                          LucideIcons.skipForward,
+                                          color: AppColors.textPrimary,
+                                        ),
+                                      ),
+
+                                      // Loop
+                                      ValueListenableBuilder<LoopMode>(
+                                        valueListenable:
+                                            _playerService.loopModeNotifier,
+                                        builder: (context, loopMode, _) {
+                                          IconData icon;
+                                          Color color;
+                                          switch (loopMode) {
+                                            case LoopMode.off:
+                                              icon = LucideIcons.repeat;
+                                              color = AppColors.textTertiary;
+                                              break;
+                                            case LoopMode.all:
+                                              icon = LucideIcons.repeat;
+                                              color = AppColors.accent;
+                                              break;
+                                            case LoopMode.one:
+                                              icon = LucideIcons.repeat1;
+                                              color = AppColors.accent;
+                                              break;
+                                          }
+                                          return IconButton(
+                                            onPressed: () =>
+                                                _playerService.toggleLoopMode(),
+                                            icon: Icon(
+                                              icon,
+                                              size: 20,
+                                              color: color,
+                                            ),
+                                          );
+                                        },
                                       ),
                                     ],
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                        ),
-
-                        const SizedBox(height: 32),
-
-                        // Controls
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 48),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              // Shuffle Button
-                              ValueListenableBuilder<bool>(
-                                valueListenable:
-                                    _playerService.isShuffleNotifier,
-                                builder: (context, isShuffle, _) {
-                                  return IconButton(
-                                    onPressed: () =>
-                                        _playerService.toggleShuffle(),
-                                    icon: Icon(
-                                      LucideIcons.shuffle,
-                                      color: isShuffle
-                                          ? AppColors.accent
-                                          : AppColors.textTertiary,
-                                    ),
-                                  );
-                                },
-                              ),
-
-                              IconButton(
-                                onPressed: () => _playerService.previous(),
-                                iconSize: 32,
-                                icon: const Icon(
-                                  LucideIcons.skipBack,
-                                  color: AppColors.textPrimary,
+                                  ),
                                 ),
                               ),
 
-                              // Play/Pause Big Button
-                              ValueListenableBuilder<bool>(
-                                valueListenable:
-                                    _playerService.isPlayingNotifier,
-                                builder: (context, isPlaying, _) {
-                                  return Container(
-                                    width: 72,
-                                    height: 72,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: AppColors.accent,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: AppColors.accent.withValues(
-                                            alpha: 0.4,
-                                          ),
-                                          blurRadius: 24,
-                                          offset: const Offset(0, 8),
-                                        ),
-                                      ],
-                                    ),
-                                    child: IconButton(
-                                      onPressed: () =>
-                                          _playerService.togglePlayPause(),
-                                      iconSize: 32,
-                                      icon: Icon(
-                                        isPlaying
-                                            ? LucideIcons.pause
-                                            : LucideIcons.play,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-
-                              IconButton(
-                                onPressed: () => _playerService.next(),
-                                iconSize: 32,
-                                icon: const Icon(
-                                  LucideIcons.skipForward,
-                                  color: AppColors.textPrimary,
+                              // Time Labels
+                              Positioned(
+                                bottom: 8,
+                                left: 24,
+                                right: 24,
+                                child: ValueListenableBuilder<Duration>(
+                                  valueListenable:
+                                      _playerService.positionNotifier,
+                                  builder: (context, position, _) {
+                                    return ValueListenableBuilder<Duration>(
+                                      valueListenable:
+                                          _playerService.durationNotifier,
+                                      builder: (context, duration, _) {
+                                        return Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              _formatDuration(position),
+                                              style: const TextStyle(
+                                                fontFamily: 'ProductSans',
+                                                fontSize: 12,
+                                                color: AppColors.textTertiary,
+                                                fontFeatures: [
+                                                  FontFeature.tabularFigures(),
+                                                ],
+                                              ),
+                                            ),
+                                            Text(
+                                              _formatDuration(duration),
+                                              style: const TextStyle(
+                                                fontFamily: 'ProductSans',
+                                                fontSize: 12,
+                                                color: AppColors.textTertiary,
+                                                fontFeatures: [
+                                                  FontFeature.tabularFigures(),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+                                  },
                                 ),
-                              ),
-
-                              // Loop Button
-                              ValueListenableBuilder<LoopMode>(
-                                valueListenable:
-                                    _playerService.loopModeNotifier,
-                                builder: (context, loopMode, _) {
-                                  IconData icon;
-                                  Color color;
-                                  switch (loopMode) {
-                                    case LoopMode.off:
-                                      icon = LucideIcons.repeat;
-                                      color = AppColors.textTertiary;
-                                      break;
-                                    case LoopMode.all:
-                                      icon = LucideIcons.repeat;
-                                      color = AppColors.accent;
-                                      break;
-                                    case LoopMode.one:
-                                      icon = LucideIcons.repeat1;
-                                      color = AppColors.accent;
-                                      break;
-                                  }
-                                  return IconButton(
-                                    onPressed: () =>
-                                        _playerService.toggleLoopMode(),
-                                    icon: Icon(icon, color: color),
-                                  );
-                                },
                               ),
                             ],
                           ),
                         ),
+                        const SizedBox(height: 32),
                       ],
                     ),
                   ),
