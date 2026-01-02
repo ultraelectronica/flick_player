@@ -8,6 +8,8 @@ import 'package:flick/core/theme/app_colors.dart';
 import 'package:flick/features/songs/screens/songs_screen.dart';
 import 'package:flick/features/menu/screens/menu_screen.dart';
 import 'package:flick/features/settings/screens/settings_screen.dart';
+import 'package:flick/features/player/widgets/mini_player.dart';
+import 'package:flick/core/constants/app_constants.dart';
 
 /// Main application widget for Flick Player.
 class FlickPlayerApp extends StatelessWidget {
@@ -122,6 +124,7 @@ class _MainShellState extends State<MainShell>
         child: Stack(
           children: [
             // Main content area with IndexedStack for faster tab switching
+            // Adjusted padding to ensure content isn't hidden behind MiniPlayer
             IndexedStack(
               index: _currentIndex,
               children: const [
@@ -129,6 +132,14 @@ class _MainShellState extends State<MainShell>
                 SongsScreen(key: ValueKey('songs')),
                 SettingsScreen(key: ValueKey('settings')),
               ],
+            ),
+
+            // Mini Player above Nav Bar
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: AppConstants.navBarHeight + 24, // Place above nav bar
+              child: const MiniPlayer(),
             ),
 
             // Navigation bar with isolated repaints
