@@ -246,7 +246,46 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                           ),
                         ),
 
-                        const SizedBox(height: 24), // Spacer removed, fixed gap
+                        const SizedBox(height: 6),
+                        // File Info
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.textTertiary.withValues(
+                                  alpha: 0.1,
+                                ),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                song.fileType,
+                                style: const TextStyle(
+                                  fontFamily: 'ProductSans',
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                            if (song.resolution != null) ...[
+                              const SizedBox(width: 8),
+                              Text(
+                                song.resolution!,
+                                style: const TextStyle(
+                                  fontFamily: 'ProductSans',
+                                  fontSize: 11,
+                                  color: AppColors.textTertiary,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 12),
 
                         const Spacer(),
 
@@ -312,95 +351,8 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                                 ),
                               ),
 
-                              // Controls Layer (Overlay)
+                              // Controls Layer (Overlay) including Time Labels
                               Center(
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    // Previous
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: const Color(
-                                          0xFF121212,
-                                        ).withValues(alpha: 0.6),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: IconButton(
-                                        onPressed: () =>
-                                            _playerService.previous(),
-                                        iconSize: 24,
-                                        icon: const Icon(
-                                          LucideIcons.skipBack,
-                                          color: AppColors.textPrimary,
-                                        ),
-                                      ),
-                                    ),
-
-                                    const SizedBox(width: 24),
-
-                                    // Play/Pause
-                                    ValueListenableBuilder<bool>(
-                                      valueListenable:
-                                          _playerService.isPlayingNotifier,
-                                      builder: (context, isPlaying, _) {
-                                        return Container(
-                                          width: 72,
-                                          height: 72,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: AppColors.accent,
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: AppColors.accent
-                                                    .withValues(alpha: 0.4),
-                                                blurRadius: 24,
-                                                offset: const Offset(0, 8),
-                                              ),
-                                            ],
-                                          ),
-                                          child: IconButton(
-                                            onPressed: () => _playerService
-                                                .togglePlayPause(),
-                                            iconSize: 32,
-                                            icon: Icon(
-                                              isPlaying
-                                                  ? LucideIcons.pause
-                                                  : LucideIcons.play,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    ),
-
-                                    const SizedBox(width: 24),
-
-                                    // Next
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: const Color(
-                                          0xFF121212,
-                                        ).withValues(alpha: 0.6),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: IconButton(
-                                        onPressed: () => _playerService.next(),
-                                        iconSize: 24,
-                                        icon: const Icon(
-                                          LucideIcons.skipForward,
-                                          color: AppColors.textPrimary,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              // Time Labels
-                              Positioned(
-                                bottom: 8,
-                                left: 24,
-                                right: 24,
                                 child: ValueListenableBuilder<Duration>(
                                   valueListenable:
                                       _playerService.positionNotifier,
@@ -410,29 +362,138 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                                           _playerService.durationNotifier,
                                       builder: (context, duration, _) {
                                         return Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
+                                          mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            Text(
-                                              _formatDuration(position),
-                                              style: const TextStyle(
-                                                fontFamily: 'ProductSans',
-                                                fontSize: 12,
-                                                color: AppColors.textTertiary,
-                                                fontFeatures: [
-                                                  FontFeature.tabularFigures(),
-                                                ],
+                                            // Current Time
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 12,
+                                                    vertical: 8,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: const Color(
+                                                  0xFF121212,
+                                                ).withValues(alpha: 0.6),
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                              ),
+                                              child: Text(
+                                                _formatDuration(position),
+                                                style: const TextStyle(
+                                                  fontFamily: 'ProductSans',
+                                                  fontSize: 12,
+                                                  color: AppColors.textPrimary,
+                                                  fontFeatures: [
+                                                    FontFeature.tabularFigures(),
+                                                  ],
+                                                ),
                                               ),
                                             ),
-                                            Text(
-                                              _formatDuration(duration),
-                                              style: const TextStyle(
-                                                fontFamily: 'ProductSans',
-                                                fontSize: 12,
-                                                color: AppColors.textTertiary,
-                                                fontFeatures: [
-                                                  FontFeature.tabularFigures(),
-                                                ],
+                                            const SizedBox(width: 16),
+                                            // Previous
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                color: const Color(
+                                                  0xFF121212,
+                                                ).withValues(alpha: 0.6),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: IconButton(
+                                                onPressed: () =>
+                                                    _playerService.previous(),
+                                                iconSize: 24,
+                                                icon: const Icon(
+                                                  LucideIcons.skipBack,
+                                                  color: AppColors.textPrimary,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 24),
+                                            // Play/Pause
+                                            ValueListenableBuilder<bool>(
+                                              valueListenable: _playerService
+                                                  .isPlayingNotifier,
+                                              builder: (context, isPlaying, _) {
+                                                return Container(
+                                                  width: 72,
+                                                  height: 72,
+                                                  decoration: BoxDecoration(
+                                                    shape: BoxShape.circle,
+                                                    color: AppColors.accent,
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                        color: AppColors.accent
+                                                            .withValues(
+                                                              alpha: 0.4,
+                                                            ),
+                                                        blurRadius: 24,
+                                                        offset: const Offset(
+                                                          0,
+                                                          8,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  child: IconButton(
+                                                    onPressed: () =>
+                                                        _playerService
+                                                            .togglePlayPause(),
+                                                    iconSize: 32,
+                                                    icon: Icon(
+                                                      isPlaying
+                                                          ? LucideIcons.pause
+                                                          : LucideIcons.play,
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                            const SizedBox(width: 24),
+                                            // Next
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                color: const Color(
+                                                  0xFF121212,
+                                                ).withValues(alpha: 0.6),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: IconButton(
+                                                onPressed: () =>
+                                                    _playerService.next(),
+                                                iconSize: 24,
+                                                icon: const Icon(
+                                                  LucideIcons.skipForward,
+                                                  color: AppColors.textPrimary,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 16),
+                                            // Total Duration
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 12,
+                                                    vertical: 8,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: const Color(
+                                                  0xFF121212,
+                                                ).withValues(alpha: 0.6),
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                              ),
+                                              child: Text(
+                                                _formatDuration(duration),
+                                                style: const TextStyle(
+                                                  fontFamily: 'ProductSans',
+                                                  fontSize: 12,
+                                                  color: AppColors.textPrimary,
+                                                  fontFeatures: [
+                                                    FontFeature.tabularFigures(),
+                                                  ],
+                                                ),
                                               ),
                                             ),
                                           ],
