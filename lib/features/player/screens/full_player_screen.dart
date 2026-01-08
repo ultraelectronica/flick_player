@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:flick/core/theme/app_colors.dart';
+import 'package:flick/core/theme/adaptive_color_provider.dart';
 import 'package:flick/models/song.dart';
 import 'package:flick/services/player_service.dart';
 import 'package:flick/features/player/widgets/waveform_seek_bar.dart';
@@ -320,25 +321,25 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                             children: [
                               IconButton(
                                 onPressed: () => Navigator.of(context).pop(),
-                                icon: const Icon(
+                                icon: Icon(
                                   LucideIcons.chevronDown,
-                                  color: AppColors.textPrimary,
+                                  color: context.adaptiveTextPrimary,
                                 ),
                               ),
-                              const Text(
+                              Text(
                                 "Now Playing",
                                 style: TextStyle(
                                   fontFamily: 'ProductSans',
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.textSecondary,
+                                  color: context.adaptiveTextSecondary,
                                   letterSpacing: 1,
                                 ),
                               ),
                               PopupMenuButton<String>(
-                                icon: const Icon(
+                                icon: Icon(
                                   Icons.more_vert,
-                                  color: AppColors.textPrimary,
+                                  color: context.adaptiveTextPrimary,
                                 ),
                                 color: AppColors.glassBackgroundStrong,
                                 shape: RoundedRectangleBorder(
@@ -473,8 +474,8 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                                     icon: Icon(
                                       LucideIcons.shuffle,
                                       color: isShuffle
-                                          ? AppColors.accent
-                                          : AppColors.textTertiary,
+                                          ? context.adaptiveAccent
+                                          : context.adaptiveTextTertiary,
                                     ),
                                   );
                                 },
@@ -489,11 +490,11 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                                       textAlign: TextAlign.center,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontFamily: 'ProductSans',
                                         fontSize: 24,
                                         fontWeight: FontWeight.bold,
-                                        color: AppColors.textPrimary,
+                                        color: context.adaptiveTextPrimary,
                                       ),
                                     ),
                                     const SizedBox(height: 8),
@@ -502,10 +503,10 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                                       textAlign: TextAlign.center,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontFamily: 'ProductSans',
                                         fontSize: 16,
-                                        color: AppColors.textSecondary,
+                                        color: context.adaptiveTextSecondary,
                                       ),
                                     ),
                                   ],
@@ -522,15 +523,15 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                                   switch (loopMode) {
                                     case LoopMode.off:
                                       icon = LucideIcons.repeat;
-                                      color = AppColors.textTertiary;
+                                      color = context.adaptiveTextTertiary;
                                       break;
                                     case LoopMode.all:
                                       icon = LucideIcons.repeat;
-                                      color = AppColors.accent;
+                                      color = context.adaptiveAccent;
                                       break;
                                     case LoopMode.one:
                                       icon = LucideIcons.repeat1;
-                                      color = AppColors.accent;
+                                      color = context.adaptiveAccent;
                                       break;
                                   }
                                   return IconButton(
@@ -555,18 +556,18 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: AppColors.textTertiary.withValues(
+                                color: context.adaptiveTextTertiary.withValues(
                                   alpha: 0.1,
                                 ),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
                                 song.fileType,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontFamily: 'ProductSans',
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.textSecondary,
+                                  color: context.adaptiveTextSecondary,
                                 ),
                               ),
                             ),
@@ -574,10 +575,10 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                               const SizedBox(width: 8),
                               Text(
                                 song.resolution!,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontFamily: 'ProductSans',
                                   fontSize: 11,
-                                  color: AppColors.textTertiary,
+                                  color: context.adaptiveTextTertiary,
                                 ),
                               ),
                             ],
@@ -701,9 +702,10 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                                                 onPressed: () =>
                                                     _playerService.previous(),
                                                 iconSize: 24,
-                                                icon: const Icon(
+                                                icon: Icon(
                                                   LucideIcons.skipBack,
-                                                  color: AppColors.textPrimary,
+                                                  color: context
+                                                      .adaptiveTextPrimary,
                                                 ),
                                               ),
                                             ),
@@ -763,9 +765,10 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                                                 onPressed: () =>
                                                     _playerService.next(),
                                                 iconSize: 24,
-                                                icon: const Icon(
+                                                icon: Icon(
                                                   LucideIcons.skipForward,
-                                                  color: AppColors.textPrimary,
+                                                  color: context
+                                                      .adaptiveTextPrimary,
                                                 ),
                                               ),
                                             ),

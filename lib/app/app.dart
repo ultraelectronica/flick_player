@@ -5,12 +5,14 @@ import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flick/core/theme/app_theme.dart';
 import 'package:flick/core/theme/app_colors.dart';
+import 'package:flick/core/theme/adaptive_color_provider.dart';
 import 'package:flick/features/songs/screens/songs_screen.dart';
 import 'package:flick/features/menu/screens/menu_screen.dart';
 import 'package:flick/features/settings/screens/settings_screen.dart';
 import 'package:flick/features/player/screens/full_player_screen.dart';
 import 'package:flick/models/song.dart';
 import 'package:flick/services/player_service.dart';
+import 'package:flick/services/color_extraction_service.dart';
 import 'package:flick/features/player/widgets/ambient_background.dart';
 import 'package:flick/widgets/navigation/salomon_nav_bar.dart';
 
@@ -53,9 +55,15 @@ class _MainShellState extends State<MainShell>
     with SingleTickerProviderStateMixin {
   int _currentIndex = 1; // Default to songs (middle)
   final PlayerService _playerService = PlayerService();
+  final ColorExtractionService _colorService = ColorExtractionService();
 
   // Use ValueNotifier for nav bar visibility to avoid full widget rebuilds
   final ValueNotifier<bool> _isNavBarVisible = ValueNotifier(true);
+
+  // Track the current effective background color for adaptive theming
+  final ValueNotifier<Color> _backgroundColorNotifier = ValueNotifier(
+    AppColors.background,
+  );
 
   // Animation controller for smoother nav bar transitions
   late final AnimationController _navBarAnimationController;
@@ -84,14 +92,39 @@ class _MainShellState extends State<MainShell>
 
     // Listen to visibility changes and trigger animation
     _isNavBarVisible.addListener(_onNavBarVisibilityChanged);
+
+    // Listen to song changes to update background color
+    _playerService.currentSongNotifier.addListener(_updateBackgroundColor);
+    // Initial extraction
+    _updateBackgroundColor();
   }
 
   @override
   void dispose() {
+    _playerService.currentSongNotifier.removeListener(_updateBackgroundColor);
     _isNavBarVisible.removeListener(_onNavBarVisibilityChanged);
     _isNavBarVisible.dispose();
+    _backgroundColorNotifier.dispose();
     _navBarAnimationController.dispose();
     super.dispose();
+  }
+
+  /// Extracts dominant color from current song's album art and updates background color.
+  void _updateBackgroundColor() async {
+    final song = _playerService.currentSongNotifier.value;
+    if (song?.albumArt != null) {
+      final color = await _colorService.extractBlendedBackgroundColor(
+        song!.albumArt,
+        blendFactor: 0.3, // Subtle blend with base background
+      );
+      if (mounted) {
+        _backgroundColorNotifier.value = color;
+      }
+    } else {
+      if (mounted) {
+        _backgroundColorNotifier.value = AppColors.background;
+      }
+    }
   }
 
   void _onNavBarVisibilityChanged() {
@@ -120,56 +153,64 @@ class _MainShellState extends State<MainShell>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      extendBody: true,
-      body: NotificationListener<ScrollNotification>(
-        onNotification: _handleScrollNotification,
-        child: Stack(
-          children: [
-            // Base Gradient
-            Container(
-              decoration: const BoxDecoration(
-                gradient: AppColors.backgroundGradient,
+    return ValueListenableBuilder<Color>(
+      valueListenable: _backgroundColorNotifier,
+      builder: (context, backgroundColor, _) {
+        return AdaptiveColorProvider(
+          backgroundColor: backgroundColor,
+          child: Scaffold(
+            backgroundColor: AppColors.background,
+            extendBody: true,
+            body: NotificationListener<ScrollNotification>(
+              onNotification: _handleScrollNotification,
+              child: Stack(
+                children: [
+                  // Base Gradient
+                  Container(
+                    decoration: const BoxDecoration(
+                      gradient: AppColors.backgroundGradient,
+                    ),
+                  ),
+
+                  // Persistent Background
+                  Positioned.fill(
+                    child: ValueListenableBuilder<Song?>(
+                      valueListenable: _playerService.currentSongNotifier,
+                      builder: (context, song, _) {
+                        return AmbientBackground(song: song);
+                      },
+                    ),
+                  ),
+
+                  // Main content area with IndexedStack for faster tab switching
+                  // Adjusted padding to ensure content isn't hidden behind MiniPlayer
+                  IndexedStack(
+                    index: _currentIndex,
+                    children: const [
+                      MenuScreen(key: ValueKey('menu')),
+                      SongsScreen(key: ValueKey('songs')),
+                      SettingsScreen(key: ValueKey('settings')),
+                    ],
+                  ),
+
+                  // Unified Bottom Bar (Mini Player + Navigation)
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: RepaintBoundary(
+                      child: SlideTransition(
+                        position: _navBarSlideAnimation,
+                        child: _buildUnifiedBottomBar(),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-
-            // Persistent Background
-            Positioned.fill(
-              child: ValueListenableBuilder<Song?>(
-                valueListenable: _playerService.currentSongNotifier,
-                builder: (context, song, _) {
-                  return AmbientBackground(song: song);
-                },
-              ),
-            ),
-
-            // Main content area with IndexedStack for faster tab switching
-            // Adjusted padding to ensure content isn't hidden behind MiniPlayer
-            IndexedStack(
-              index: _currentIndex,
-              children: const [
-                MenuScreen(key: ValueKey('menu')),
-                SongsScreen(key: ValueKey('songs')),
-                SettingsScreen(key: ValueKey('settings')),
-              ],
-            ),
-
-            // Unified Bottom Bar (Mini Player + Navigation)
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: RepaintBoundary(
-                child: SlideTransition(
-                  position: _navBarSlideAnimation,
-                  child: _buildUnifiedBottomBar(),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 

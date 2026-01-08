@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flick/core/theme/app_colors.dart';
+import 'package:flick/core/theme/adaptive_color_provider.dart';
 
 /// A reusable glassmorphic navigation bar widget using SalomonBottomBar.
 ///
@@ -72,7 +73,7 @@ class SalomonNavBar extends StatelessWidget {
               if (showMiniPlayer && miniPlayerWidget != null) miniPlayerWidget!,
 
               // Navigation Bar
-              _buildNavigationItems(),
+              _buildNavigationItems(context),
             ],
           ),
         ),
@@ -80,7 +81,7 @@ class SalomonNavBar extends StatelessWidget {
     );
   }
 
-  Widget _buildNavigationItems() {
+  Widget _buildNavigationItems(BuildContext context) {
     // Adjust padding based on whether mini player is shown
     final padding = showMiniPlayer
         ? const EdgeInsets.fromLTRB(16, -35, 16, 7)
@@ -89,6 +90,11 @@ class SalomonNavBar extends StatelessWidget {
     final transform = showMiniPlayer
         ? Matrix4.translationValues(0, -8, 0)
         : Matrix4.identity();
+
+    // Get adaptive colors based on background
+    final selectedColor = context.adaptiveTextPrimary;
+    final unselectedColor = context.adaptiveTextTertiary;
+    final accentColor = context.adaptiveAccent;
 
     return Transform(
       transform: transform,
@@ -99,8 +105,8 @@ class SalomonNavBar extends StatelessWidget {
           onTap: onTap,
           margin: EdgeInsets.zero,
           itemPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          selectedItemColor: AppColors.textPrimary,
-          unselectedItemColor: AppColors.textTertiary,
+          selectedItemColor: selectedColor,
+          unselectedItemColor: unselectedColor,
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOutQuart,
           items: [
@@ -114,8 +120,8 @@ class SalomonNavBar extends StatelessWidget {
                   letterSpacing: 0.3,
                 ),
               ),
-              selectedColor: AppColors.accentLight,
-              unselectedColor: AppColors.textTertiary,
+              selectedColor: accentColor,
+              unselectedColor: unselectedColor,
             ),
             SalomonBottomBarItem(
               icon: const Icon(LucideIcons.disc3, size: 20),
@@ -127,8 +133,8 @@ class SalomonNavBar extends StatelessWidget {
                   letterSpacing: 0.3,
                 ),
               ),
-              selectedColor: AppColors.accentLight,
-              unselectedColor: AppColors.textTertiary,
+              selectedColor: accentColor,
+              unselectedColor: unselectedColor,
             ),
             SalomonBottomBarItem(
               icon: const Icon(LucideIcons.settings2, size: 20),
@@ -140,8 +146,8 @@ class SalomonNavBar extends StatelessWidget {
                   letterSpacing: 0.3,
                 ),
               ),
-              selectedColor: AppColors.accentLight,
-              unselectedColor: AppColors.textTertiary,
+              selectedColor: accentColor,
+              unselectedColor: unselectedColor,
             ),
           ],
         ),

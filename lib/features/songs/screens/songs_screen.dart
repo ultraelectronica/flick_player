@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flick/core/theme/app_colors.dart';
+import 'package:flick/core/theme/adaptive_color_provider.dart';
 import 'package:flick/core/constants/app_constants.dart';
 import 'package:flick/models/song.dart';
 import 'package:flick/features/songs/widgets/orbit_scroll.dart';
@@ -196,8 +197,8 @@ class _SongsScreenState extends State<SongsScreen> {
   }
 
   Widget _buildLoadingState() {
-    return const Center(
-      child: CircularProgressIndicator(color: AppColors.textSecondary),
+    return Center(
+      child: CircularProgressIndicator(color: context.adaptiveTextSecondary),
     );
   }
 
@@ -209,22 +210,22 @@ class _SongsScreenState extends State<SongsScreen> {
           Icon(
             LucideIcons.music4,
             size: 64,
-            color: AppColors.textTertiary.withValues(alpha: 0.5),
+            color: context.adaptiveTextTertiary.withValues(alpha: 0.5),
           ),
           const SizedBox(height: AppConstants.spacingLg),
           Text(
             'No Music Yet',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: AppColors.textSecondary,
+              color: context.adaptiveTextSecondary,
               fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: AppConstants.spacingSm),
           Text(
             'Add a music folder in Settings',
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: AppColors.textTertiary),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: context.adaptiveTextTertiary,
+            ),
           ),
         ],
       ),
@@ -291,13 +292,14 @@ class _SongsScreenState extends State<SongsScreen> {
                 'Your Library',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w600,
+                  color: context.adaptiveTextPrimary,
                 ),
               ),
               const SizedBox(height: AppConstants.spacingXxs),
               Text(
                 '${_songs.length} songs',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
+                  color: context.adaptiveTextSecondary,
                 ),
               ),
             ],
@@ -311,9 +313,9 @@ class _SongsScreenState extends State<SongsScreen> {
               border: Border.all(color: AppColors.glassBorder, width: 1),
             ),
             child: PopupMenuButton<SortOption>(
-              icon: const Icon(
+              icon: Icon(
                 Icons.sort_rounded,
-                color: AppColors.textSecondary,
+                color: context.adaptiveTextSecondary,
                 size: 20,
               ),
               color: AppColors.surface,
@@ -331,25 +333,25 @@ class _SongsScreenState extends State<SongsScreen> {
               },
               itemBuilder: (BuildContext context) =>
                   <PopupMenuEntry<SortOption>>[
-                    const PopupMenuItem<SortOption>(
+                    PopupMenuItem<SortOption>(
                       value: SortOption.title,
                       child: Text(
                         'Sort by Title',
-                        style: TextStyle(color: AppColors.textPrimary),
+                        style: TextStyle(color: context.adaptiveTextPrimary),
                       ),
                     ),
-                    const PopupMenuItem<SortOption>(
+                    PopupMenuItem<SortOption>(
                       value: SortOption.artist,
                       child: Text(
                         'Sort by Artist',
-                        style: TextStyle(color: AppColors.textPrimary),
+                        style: TextStyle(color: context.adaptiveTextPrimary),
                       ),
                     ),
-                    const PopupMenuItem<SortOption>(
+                    PopupMenuItem<SortOption>(
                       value: SortOption.dateAdded,
                       child: Text(
                         'Sort by Date Added',
-                        style: TextStyle(color: AppColors.textPrimary),
+                        style: TextStyle(color: context.adaptiveTextPrimary),
                       ),
                     ),
                   ],
