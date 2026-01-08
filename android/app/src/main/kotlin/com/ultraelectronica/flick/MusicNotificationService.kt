@@ -240,12 +240,6 @@ class MusicNotificationService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         
-        val stopIntent = PendingIntent.getBroadcast(
-            this, 4,
-            Intent(ACTION_STOP),
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        
         // Load album art
         val albumArt: Bitmap? = currentAlbumArtPath?.let { path ->
             try {
@@ -269,10 +263,10 @@ class MusicNotificationService : Service() {
             .setSmallIcon(android.R.drawable.ic_media_play)
             .setLargeIcon(albumArt)
             .setContentIntent(contentIntent)
-            .setDeleteIntent(stopIntent)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setOnlyAlertOnce(true)
             .setShowWhen(false)
+            .setOngoing(true) // Makes notification non-dismissable
             .addAction(android.R.drawable.ic_media_previous, "Previous", prevIntent)
             .addAction(playPauseIcon, playPauseText, playPauseIntent)
             .addAction(android.R.drawable.ic_media_next, "Next", nextIntent)
@@ -280,8 +274,6 @@ class MusicNotificationService : Service() {
                 MediaNotificationCompat.MediaStyle()
                     .setMediaSession(mediaSession.sessionToken)
                     .setShowActionsInCompactView(0, 1, 2)
-                    .setShowCancelButton(true)
-                    .setCancelButtonIntent(stopIntent)
             )
             .build()
     }
