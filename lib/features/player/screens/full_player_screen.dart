@@ -21,6 +21,9 @@ class FullPlayerScreen extends StatefulWidget {
 class _FullPlayerScreenState extends State<FullPlayerScreen> {
   final PlayerService _playerService = PlayerService();
 
+  // Track drag offset for swipe-down to dismiss
+  double _dragOffset = 0;
+
   // For nice time formatting (mm:ss)
   String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
@@ -286,22 +289,38 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
             return const SizedBox.shrink();
           }
 
-          return Dismissible(
-            key: const Key('full_player_dismiss'),
-            direction: DismissDirection.down,
-            onDismissed: (_) {
-              Navigator.of(context).pop();
+          return GestureDetector(
+            onVerticalDragUpdate: (details) {
+              // Only track downward drag
+              if (details.delta.dy > 0) {
+                _dragOffset += details.delta.dy;
+                setState(() {});
+              }
             },
-            child: GestureDetector(
-              onHorizontalDragEnd: (details) {
-                if (details.primaryVelocity! < -500) {
-                  // Swipe Left -> Next
-                  _playerService.next();
-                } else if (details.primaryVelocity! > 500) {
-                  // Swipe Right -> Previous
-                  _playerService.previous();
-                }
-              },
+            onVerticalDragEnd: (details) {
+              // If dragged down enough or with enough velocity, dismiss
+              if (_dragOffset > 100 || details.primaryVelocity! > 500) {
+                Navigator.of(context).pop();
+              }
+              // Reset drag offset
+              _dragOffset = 0;
+              setState(() {});
+            },
+            onHorizontalDragEnd: (details) {
+              if (details.primaryVelocity! < -500) {
+                // Swipe Left -> Next
+                _playerService.next();
+              } else if (details.primaryVelocity! > 500) {
+                // Swipe Right -> Previous
+                _playerService.previous();
+              }
+            },
+            child: AnimatedContainer(
+              duration: _dragOffset == 0
+                  ? const Duration(milliseconds: 200)
+                  : Duration.zero,
+              curve: Curves.easeOut,
+              transform: Matrix4.translationValues(0, _dragOffset * 0.5, 0),
               child: Stack(
                 children: [
                   // Ambient background
@@ -823,8 +842,8 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                       currentIndex:
                           1, // Songs is always selected when in player
                       onTap: (index) {
-                        // Pop the full player and navigate
-                        Navigator.of(context).pop();
+                        // Pop the full player and pass the index to navigate to
+                        Navigator.of(context).pop(index);
                       },
                       showMiniPlayer: false,
                     ),

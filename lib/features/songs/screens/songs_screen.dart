@@ -14,7 +14,10 @@ enum SortOption { title, artist, dateAdded }
 
 /// Main songs screen with orbital scrolling.
 class SongsScreen extends StatefulWidget {
-  const SongsScreen({super.key});
+  /// Callback when navigation to a different tab is requested from full player
+  final ValueChanged<int>? onNavigationRequested;
+
+  const SongsScreen({super.key, this.onNavigationRequested});
 
   @override
   State<SongsScreen> createState() => _SongsScreenState();
@@ -145,10 +148,10 @@ class _SongsScreenState extends State<SongsScreen> {
                             _selectedIndex = index;
                           });
                         },
-                        onSongSelected: (index) {
+                        onSongSelected: (index) async {
                           _playSong(_songs[index]);
                           // Navigate to full player screen
-                          Navigator.of(context).push(
+                          final result = await Navigator.of(context).push<int>(
                             PageRouteBuilder(
                               pageBuilder:
                                   (context, animation, secondaryAnimation) =>
@@ -183,6 +186,13 @@ class _SongsScreenState extends State<SongsScreen> {
                               barrierColor: Colors.black,
                             ),
                           );
+                          // If a navigation index was returned and it's not Songs (1),
+                          // notify the parent to switch tabs
+                          if (result != null &&
+                              result != 1 &&
+                              widget.onNavigationRequested != null) {
+                            widget.onNavigationRequested!(result);
+                          }
                         },
                       ),
               ),

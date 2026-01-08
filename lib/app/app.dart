@@ -186,10 +186,17 @@ class _MainShellState extends State<MainShell>
                   // Adjusted padding to ensure content isn't hidden behind MiniPlayer
                   IndexedStack(
                     index: _currentIndex,
-                    children: const [
-                      MenuScreen(key: ValueKey('menu')),
-                      SongsScreen(key: ValueKey('songs')),
-                      SettingsScreen(key: ValueKey('settings')),
+                    children: [
+                      const MenuScreen(key: ValueKey('menu')),
+                      SongsScreen(
+                        key: const ValueKey('songs'),
+                        onNavigationRequested: (index) {
+                          setState(() {
+                            _currentIndex = index;
+                          });
+                        },
+                      ),
+                      const SettingsScreen(key: ValueKey('settings')),
                     ],
                   ),
 
@@ -238,8 +245,8 @@ class _MainShellState extends State<MainShell>
         }
 
         return GestureDetector(
-          onTap: () {
-            Navigator.of(context).push(
+          onTap: () async {
+            final result = await Navigator.of(context).push<int>(
               PageRouteBuilder(
                 pageBuilder: (context, animation, secondaryAnimation) =>
                     FullPlayerScreen(heroTag: 'song_art_${song.id}'),
@@ -264,6 +271,12 @@ class _MainShellState extends State<MainShell>
                 barrierColor: Colors.black,
               ),
             );
+            // Navigate to the returned tab index if provided
+            if (result != null && mounted) {
+              setState(() {
+                _currentIndex = result;
+              });
+            }
           },
           child: Container(
             margin: const EdgeInsets.fromLTRB(12, 12, 12, 8),
