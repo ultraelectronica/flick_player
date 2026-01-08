@@ -187,7 +187,14 @@ class _MainShellState extends State<MainShell>
                   IndexedStack(
                     index: _currentIndex,
                     children: [
-                      const MenuScreen(key: ValueKey('menu')),
+                      MenuScreen(
+                        key: const ValueKey('menu'),
+                        onNavigateToTab: (index) {
+                          setState(() {
+                            _currentIndex = index;
+                          });
+                        },
+                      ),
                       SongsScreen(
                         key: const ValueKey('songs'),
                         onNavigationRequested: (index) {
