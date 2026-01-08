@@ -415,7 +415,7 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                           ),
                         ),
 
-                        const Spacer(),
+                        const Spacer(flex: 2),
 
                         // Hero Album Art
                         Hero(
@@ -454,7 +454,7 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                                 : null,
                           ),
                         ),
-                        const SizedBox(height: 48),
+                        const SizedBox(height: 32),
                         // Metadata (Row with Shuffle/Loop)
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -582,9 +582,9 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                             ],
                           ],
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 8),
 
-                        const Spacer(),
+                        const Spacer(flex: 2),
 
                         // Scrolling Waveform & Controls
                         SizedBox(
@@ -805,7 +805,7 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 16),
                       ],
                     ),
                   ),
