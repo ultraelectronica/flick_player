@@ -47,4 +47,35 @@ class AppConstants {
   // Song card
   static const double songCardArtSize = 64.0;
   static const double songCardArtSizeLarge = 100.0;
+
+  // Responsive base sizes (scaled by Responsive utility)
+  // Icons
+  static const double iconSizeXs = 12.0;
+  static const double iconSizeSm = 16.0;
+  static const double iconSizeMd = 20.0;
+  static const double iconSizeLg = 24.0;
+  static const double iconSizeXl = 32.0;
+
+  // Font sizes
+  static const double fontSizeXs = 10.0;
+  static const double fontSizeSm = 12.0;
+  static const double fontSizeMd = 14.0;
+  static const double fontSizeLg = 16.0;
+  static const double fontSizeXl = 20.0;
+  static const double fontSizeXxl = 24.0;
+  static const double fontSizeDisplay = 32.0;
+
+  // Card dimensions
+  static const double cardWidthSm = 100.0;
+  static const double cardWidthMd = 120.0;
+  static const double cardWidthLg = 160.0;
+  static const double cardHeightSm = 120.0;
+  static const double cardHeightMd = 160.0;
+  static const double cardHeightLg = 200.0;
+
+  // Container sizes
+  static const double containerSizeSm = 40.0;
+  static const double containerSizeMd = 48.0;
+  static const double containerSizeLg = 64.0;
+  static const double containerSizeXl = 72.0;
 }

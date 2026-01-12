@@ -6,6 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flick/core/theme/app_colors.dart';
 import 'package:flick/core/theme/adaptive_color_provider.dart';
 import 'package:flick/core/constants/app_constants.dart';
+import 'package:flick/core/utils/responsive.dart';
 import 'package:flick/models/song.dart';
 import 'package:flick/data/repositories/song_repository.dart';
 import 'package:flick/services/player_service.dart';
@@ -119,7 +120,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
               icon: Icon(
                 LucideIcons.arrowLeft,
                 color: context.adaptiveTextPrimary,
-                size: 20,
+                size: context.responsiveIcon(AppConstants.iconSizeMd),
               ),
               onPressed: () => Navigator.of(context).pop(),
             ),
@@ -163,7 +164,7 @@ class _ArtistsScreenState extends State<ArtistsScreen> {
         children: [
           Icon(
             LucideIcons.users,
-            size: 64,
+            size: context.responsiveIcon(AppConstants.containerSizeLg),
             color: context.adaptiveTextTertiary.withValues(alpha: 0.5),
           ),
           const SizedBox(height: AppConstants.spacingLg),
@@ -254,8 +255,8 @@ class _ArtistCard extends StatelessWidget {
                   children: [
                     // Circular avatar
                     Container(
-                      width: 56,
-                      height: 56,
+                      width: context.scaleSize(56),
+                      height: context.scaleSize(56),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: AppColors.glassBackgroundStrong,
@@ -303,7 +304,7 @@ class _ArtistCard extends StatelessWidget {
                     Icon(
                       LucideIcons.chevronRight,
                       color: context.adaptiveTextTertiary,
-                      size: 20,
+                      size: context.responsiveIcon(AppConstants.iconSizeMd),
                     ),
                   ],
                 ),

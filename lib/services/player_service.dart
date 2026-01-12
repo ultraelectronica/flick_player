@@ -5,6 +5,7 @@ import 'package:flick/models/song.dart';
 import 'package:flick/services/notification_service.dart';
 import 'package:flick/services/last_played_service.dart';
 import 'package:flick/services/favorites_service.dart';
+import 'package:flick/data/repositories/recently_played_repository.dart';
 
 /// Singleton service to manage global audio playback state.
 class PlayerService {
@@ -22,6 +23,8 @@ class PlayerService {
   final NotificationService _notificationService = NotificationService();
   final LastPlayedService _lastPlayedService = LastPlayedService();
   final FavoritesService _favoritesService = FavoritesService();
+  final RecentlyPlayedRepository _recentlyPlayedRepository =
+      RecentlyPlayedRepository();
 
   // Timer to periodically save position
   Timer? _positionSaveTimer;
@@ -172,6 +175,9 @@ class PlayerService {
       }
 
       currentSongNotifier.value = song;
+
+      // Record to play history
+      _recentlyPlayedRepository.recordPlay(song.id);
 
       // Reset duration/position for UI responsiveness
       positionNotifier.value = Duration.zero;

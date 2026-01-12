@@ -3,9 +3,11 @@ import 'package:path_provider/path_provider.dart';
 
 import 'entities/song_entity.dart';
 import 'entities/folder_entity.dart';
+import 'entities/recently_played_entity.dart';
 
 export 'entities/song_entity.dart';
 export 'entities/folder_entity.dart';
+export 'entities/recently_played_entity.dart';
 
 /// Database singleton for Isar operations.
 class Database {
@@ -24,7 +26,7 @@ class Database {
 
     final dir = await getApplicationDocumentsDirectory();
     _instance = await Isar.open(
-      [SongEntitySchema, FolderEntitySchema],
+      [SongEntitySchema, FolderEntitySchema, RecentlyPlayedEntitySchema],
       directory: dir.path,
       name: 'flick_player',
     );
@@ -41,4 +43,8 @@ class Database {
 
   /// Get the folders collection.
   static IsarCollection<FolderEntity> get folders => instance.folderEntitys;
+
+  /// Get the recently played collection.
+  static IsarCollection<RecentlyPlayedEntity> get recentlyPlayed =>
+      instance.recentlyPlayedEntitys;
 }

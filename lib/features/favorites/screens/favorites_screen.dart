@@ -6,6 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flick/core/theme/app_colors.dart';
 import 'package:flick/core/theme/adaptive_color_provider.dart';
 import 'package:flick/core/constants/app_constants.dart';
+import 'package:flick/core/utils/responsive.dart';
 import 'package:flick/models/song.dart';
 import 'package:flick/services/player_service.dart';
 import 'package:flick/services/favorites_service.dart';
@@ -110,7 +111,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               icon: Icon(
                 LucideIcons.arrowLeft,
                 color: context.adaptiveTextPrimary,
-                size: 20,
+                size: context.responsiveIcon(AppConstants.iconSizeMd),
               ),
               onPressed: () => Navigator.of(context).pop(),
             ),
@@ -147,7 +148,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 icon: Icon(
                   LucideIcons.shuffle,
                   color: context.adaptiveTextPrimary,
-                  size: 20,
+                  size: context.responsiveIcon(AppConstants.iconSizeMd),
                 ),
                 onPressed: () {
                   final shuffled = List<Song>.from(_favorites)..shuffle();
@@ -277,7 +278,7 @@ class _HeartIllustrationState extends State<_HeartIllustration>
             ),
             child: Icon(
               LucideIcons.heart,
-              size: 48,
+              size: context.responsiveIcon(AppConstants.containerSizeMd),
               color: Colors.red.withValues(alpha: 0.7),
             ),
           ),
@@ -338,8 +339,8 @@ class _FavoriteSongTile extends StatelessWidget {
                     children: [
                       // Album art
                       Container(
-                        width: 52,
-                        height: 52,
+                        width: context.scaleSize(52),
+                        height: context.scaleSize(52),
                         decoration: BoxDecoration(
                           color: AppColors.glassBackgroundStrong,
                           borderRadius: BorderRadius.circular(
@@ -389,11 +390,10 @@ class _FavoriteSongTile extends StatelessWidget {
                           ],
                         ),
                       ),
-                      // Heart icon
                       Icon(
                         LucideIcons.heart,
                         color: Colors.red.withValues(alpha: 0.8),
-                        size: 20,
+                        size: context.responsiveIcon(AppConstants.iconSizeMd),
                       ),
                     ],
                   ),
@@ -411,7 +411,7 @@ class _FavoriteSongTile extends StatelessWidget {
       child: Icon(
         LucideIcons.music,
         color: context.adaptiveTextTertiary,
-        size: 24,
+        size: context.responsiveIcon(AppConstants.iconSizeLg),
       ),
     );
   }

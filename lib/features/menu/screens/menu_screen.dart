@@ -5,6 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flick/core/theme/app_colors.dart';
 import 'package:flick/core/theme/adaptive_color_provider.dart';
 import 'package:flick/core/constants/app_constants.dart';
+import 'package:flick/core/utils/responsive.dart';
 import 'package:flick/features/songs/screens/songs_screen.dart';
 import 'package:flick/features/playlists/screens/playlists_screen.dart';
 import 'package:flick/features/favorites/screens/favorites_screen.dart';
@@ -172,8 +173,8 @@ class MenuScreen extends StatelessWidget {
                   children: [
                     // Icon container
                     Container(
-                      width: 48,
-                      height: 48,
+                      width: context.scaleSize(AppConstants.containerSizeMd),
+                      height: context.scaleSize(AppConstants.containerSizeMd),
                       decoration: BoxDecoration(
                         color: AppColors.glassBackgroundStrong,
                         borderRadius: BorderRadius.circular(
@@ -187,7 +188,7 @@ class MenuScreen extends StatelessWidget {
                       child: Icon(
                         icon,
                         color: context.adaptiveTextPrimary,
-                        size: 22,
+                        size: context.responsiveIcon(AppConstants.iconSizeMd),
                       ),
                     ),
 
@@ -217,7 +218,7 @@ class MenuScreen extends StatelessWidget {
                     Icon(
                       LucideIcons.chevronRight,
                       color: context.adaptiveTextTertiary,
-                      size: 20,
+                      size: context.responsiveIcon(AppConstants.iconSizeMd),
                     ),
                   ],
                 ),

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
@@ -6,9 +7,11 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flick/core/theme/app_colors.dart';
 import 'package:flick/core/theme/adaptive_color_provider.dart';
 import 'package:flick/core/constants/app_constants.dart';
+import 'package:flick/core/utils/responsive.dart';
 import 'package:flick/models/song.dart';
 import 'package:flick/services/player_service.dart';
 import 'package:flick/features/player/screens/full_player_screen.dart';
+import 'package:flick/data/repositories/recently_played_repository.dart';
 
 /// Recently Played screen with timeline-style layout.
 class RecentlyPlayedScreen extends StatefulWidget {
@@ -20,25 +23,96 @@ class RecentlyPlayedScreen extends StatefulWidget {
 
 class _RecentlyPlayedScreenState extends State<RecentlyPlayedScreen> {
   final PlayerService _playerService = PlayerService();
+  final RecentlyPlayedRepository _recentlyPlayedRepository =
+      RecentlyPlayedRepository();
 
-  // TODO: Replace with actual recently played from Isar or SharedPreferences
   bool _isLoading = true;
-  Map<String, List<_RecentlyPlayedEntry>> _groupedHistory = {};
+  Map<String, List<RecentlyPlayedEntry>> _groupedHistory = {};
+  StreamSubscription<void>? _historySubscription;
 
   @override
   void initState() {
     super.initState();
     _loadHistory();
+    _watchHistory();
+  }
+
+  @override
+  void dispose() {
+    _historySubscription?.cancel();
+    super.dispose();
+  }
+
+  void _watchHistory() {
+    _historySubscription = _recentlyPlayedRepository.watchHistory().listen((_) {
+      _loadHistory();
+    });
   }
 
   Future<void> _loadHistory() async {
-    // Simulate loading
-    await Future.delayed(const Duration(milliseconds: 300));
-    if (mounted) {
-      setState(() {
-        _groupedHistory = {}; // Empty until feature is implemented
-        _isLoading = false;
-      });
+    if (!mounted) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final grouped = await _recentlyPlayedRepository.getGroupedHistory();
+      if (mounted) {
+        setState(() {
+          _groupedHistory = grouped;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _groupedHistory = {};
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _clearHistory() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.glassBackgroundStrong,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppConstants.radiusLg),
+          side: BorderSide(color: AppColors.glassBorder),
+        ),
+        title: Text(
+          'Clear History',
+          style: TextStyle(color: context.adaptiveTextPrimary),
+        ),
+        content: Text(
+          'Are you sure you want to clear your entire listening history? This cannot be undone.',
+          style: TextStyle(color: context.adaptiveTextSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: context.adaptiveTextSecondary),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
+            child: const Text('Clear'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await _recentlyPlayedRepository.clearHistory();
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('History cleared')));
+      }
     }
   }
 
@@ -83,7 +157,7 @@ class _RecentlyPlayedScreenState extends State<RecentlyPlayedScreen> {
               icon: Icon(
                 LucideIcons.arrowLeft,
                 color: context.adaptiveTextPrimary,
-                size: 20,
+                size: context.responsiveIcon(AppConstants.iconSizeMd),
               ),
               onPressed: () => Navigator.of(context).pop(),
             ),
@@ -120,14 +194,9 @@ class _RecentlyPlayedScreenState extends State<RecentlyPlayedScreen> {
                 icon: Icon(
                   LucideIcons.trash2,
                   color: context.adaptiveTextSecondary,
-                  size: 20,
+                  size: context.responsiveIcon(AppConstants.iconSizeMd),
                 ),
-                onPressed: () {
-                  // TODO: Clear history
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Clear history coming soon!')),
-                  );
-                },
+                onPressed: _clearHistory,
               ),
             ),
         ],
@@ -173,8 +242,8 @@ class _RecentlyPlayedScreenState extends State<RecentlyPlayedScreen> {
                   ),
                   // Center icon
                   Container(
-                    width: 72,
-                    height: 72,
+                    width: context.scaleSize(AppConstants.containerSizeXl),
+                    height: context.scaleSize(AppConstants.containerSizeXl),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: AppColors.glassBackground,
@@ -185,7 +254,7 @@ class _RecentlyPlayedScreenState extends State<RecentlyPlayedScreen> {
                     ),
                     child: Icon(
                       LucideIcons.clock,
-                      size: 32,
+                      size: context.responsiveIcon(AppConstants.iconSizeXl),
                       color: context.adaptiveTextTertiary,
                     ),
                   ),
@@ -216,19 +285,35 @@ class _RecentlyPlayedScreenState extends State<RecentlyPlayedScreen> {
   }
 
   Widget _buildHistoryList() {
-    final sections = _groupedHistory.entries.toList();
+    // Define the order we want sections to appear
+    const sectionOrder = [
+      'Today',
+      'Yesterday',
+      'This Week',
+      'Last Week',
+      'This Month',
+      'Earlier',
+    ];
+
+    // Sort sections according to our defined order
+    final sortedSections = _groupedHistory.entries.toList()
+      ..sort((a, b) {
+        final aIndex = sectionOrder.indexOf(a.key);
+        final bIndex = sectionOrder.indexOf(b.key);
+        return aIndex.compareTo(bIndex);
+      });
 
     return ListView.builder(
       padding: EdgeInsets.only(bottom: AppConstants.navBarHeight + 120),
-      itemCount: sections.length,
+      itemCount: sortedSections.length,
       itemBuilder: (context, sectionIndex) {
-        final section = sections[sectionIndex];
+        final section = sortedSections[sectionIndex];
         return _buildTimeSection(section.key, section.value);
       },
     );
   }
 
-  Widget _buildTimeSection(String title, List<_RecentlyPlayedEntry> entries) {
+  Widget _buildTimeSection(String title, List<RecentlyPlayedEntry> entries) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -256,12 +341,19 @@ class _RecentlyPlayedScreenState extends State<RecentlyPlayedScreen> {
                   fontWeight: FontWeight.w600,
                 ),
               ),
+              const Spacer(),
+              Text(
+                '${entries.length} ${entries.length == 1 ? 'song' : 'songs'}',
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: context.adaptiveTextTertiary,
+                ),
+              ),
             ],
           ),
         ),
         // Horizontal scrollable cards
         SizedBox(
-          height: 160,
+          height: context.scaleSize(AppConstants.cardHeightMd),
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(
@@ -293,13 +385,6 @@ class _RecentlyPlayedScreenState extends State<RecentlyPlayedScreen> {
       ],
     );
   }
-}
-
-class _RecentlyPlayedEntry {
-  final Song song;
-  final DateTime playedAt;
-
-  _RecentlyPlayedEntry({required this.song, required this.playedAt});
 }
 
 class _RecentlyPlayedCard extends StatelessWidget {
@@ -343,7 +428,7 @@ class _RecentlyPlayedCard extends StatelessWidget {
                 sigmaY: AppConstants.glassBlurSigmaLight,
               ),
               child: Container(
-                width: 120,
+                width: context.scaleSize(AppConstants.cardWidthMd),
                 decoration: BoxDecoration(
                   color: AppColors.glassBackground,
                   borderRadius: BorderRadius.circular(AppConstants.radiusLg),
@@ -398,7 +483,9 @@ class _RecentlyPlayedCard extends StatelessWidget {
                             children: [
                               Icon(
                                 LucideIcons.clock,
-                                size: 10,
+                                size: context.responsiveIcon(
+                                  AppConstants.iconSizeXs,
+                                ),
                                 color: context.adaptiveTextTertiary,
                               ),
                               const SizedBox(width: 4),
@@ -429,7 +516,7 @@ class _RecentlyPlayedCard extends StatelessWidget {
       child: Icon(
         LucideIcons.music,
         color: context.adaptiveTextTertiary.withValues(alpha: 0.5),
-        size: 28,
+        size: context.responsiveIcon(AppConstants.iconSizeLg),
       ),
     );
   }
