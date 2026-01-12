@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flick/core/theme/app_colors.dart';
 import 'package:flick/core/theme/adaptive_color_provider.dart';
 import 'package:flick/core/constants/app_constants.dart';
+import 'package:flick/core/utils/responsive.dart';
 import 'package:flick/models/song.dart';
 import 'package:flick/features/songs/widgets/orbit_scroll.dart';
 import 'package:flick/features/player/screens/full_player_screen.dart';
@@ -219,7 +220,7 @@ class _SongsScreenState extends State<SongsScreen> {
         children: [
           Icon(
             LucideIcons.music4,
-            size: 64,
+            size: context.responsiveIcon(AppConstants.containerSizeLg),
             color: context.adaptiveTextTertiary.withValues(alpha: 0.5),
           ),
           const SizedBox(height: AppConstants.spacingLg),
@@ -326,7 +327,7 @@ class _SongsScreenState extends State<SongsScreen> {
               icon: Icon(
                 Icons.sort_rounded,
                 color: context.adaptiveTextSecondary,
-                size: 20,
+                size: context.responsiveIcon(AppConstants.iconSizeMd),
               ),
               color: AppColors.surface,
               shape: RoundedRectangleBorder(

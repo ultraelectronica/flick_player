@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:flick/core/theme/app_colors.dart';
 import 'package:flick/core/theme/adaptive_color_provider.dart';
+import 'package:flick/core/constants/app_constants.dart';
+import 'package:flick/core/utils/responsive.dart';
 import 'package:flick/models/song.dart';
 import 'package:flick/services/player_service.dart';
 import 'package:flick/services/favorites_service.dart';
@@ -444,8 +446,12 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                         Hero(
                           tag: widget.heroTag,
                           child: Container(
-                            width: MediaQuery.of(context).size.width * 0.85,
-                            height: MediaQuery.of(context).size.width * 0.85,
+                            width:
+                                context.responsive(0.8, 0.85) *
+                                MediaQuery.of(context).size.width,
+                            height:
+                                context.responsive(0.8, 0.85) *
+                                MediaQuery.of(context).size.width,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(40),
                               boxShadow: [
@@ -490,7 +496,9 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   fontFamily: 'ProductSans',
-                                  fontSize: 24,
+                                  fontSize: context.responsiveText(
+                                    AppConstants.fontSizeXxl,
+                                  ),
                                   fontWeight: FontWeight.bold,
                                   color: context.adaptiveTextPrimary,
                                 ),
@@ -503,7 +511,9 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   fontFamily: 'ProductSans',
-                                  fontSize: 16,
+                                  fontSize: context.responsiveText(
+                                    AppConstants.fontSizeLg,
+                                  ),
                                   color: context.adaptiveTextSecondary,
                                 ),
                               ),
@@ -568,7 +578,9 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                                     color: isShuffle
                                         ? context.adaptiveAccent
                                         : context.adaptiveTextTertiary,
-                                    size: 22,
+                                    size: context.responsiveIcon(
+                                      AppConstants.iconSizeMd,
+                                    ),
                                   ),
                                 );
                               },
@@ -597,7 +609,13 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                                 return IconButton(
                                   onPressed: () =>
                                       _playerService.toggleLoopMode(),
-                                  icon: Icon(icon, color: color, size: 22),
+                                  icon: Icon(
+                                    icon,
+                                    color: color,
+                                    size: context.responsiveIcon(
+                                      AppConstants.iconSizeMd,
+                                    ),
+                                  ),
                                 );
                               },
                             ),
@@ -634,7 +652,9 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                                     color: isFavorite
                                         ? Colors.red
                                         : context.adaptiveTextTertiary,
-                                    size: 22,
+                                    size: context.responsiveIcon(
+                                      AppConstants.iconSizeMd,
+                                    ),
                                   ),
                                 );
                               },

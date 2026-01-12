@@ -7,6 +7,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flick/core/theme/app_colors.dart';
 import 'package:flick/core/theme/adaptive_color_provider.dart';
 import 'package:flick/core/constants/app_constants.dart';
+import 'package:flick/core/utils/responsive.dart';
 import 'package:flick/models/song.dart';
 import 'package:flick/services/player_service.dart';
 import 'package:flick/features/player/screens/full_player_screen.dart';
@@ -156,7 +157,7 @@ class _RecentlyPlayedScreenState extends State<RecentlyPlayedScreen> {
               icon: Icon(
                 LucideIcons.arrowLeft,
                 color: context.adaptiveTextPrimary,
-                size: 20,
+                size: context.responsiveIcon(AppConstants.iconSizeMd),
               ),
               onPressed: () => Navigator.of(context).pop(),
             ),
@@ -193,7 +194,7 @@ class _RecentlyPlayedScreenState extends State<RecentlyPlayedScreen> {
                 icon: Icon(
                   LucideIcons.trash2,
                   color: context.adaptiveTextSecondary,
-                  size: 20,
+                  size: context.responsiveIcon(AppConstants.iconSizeMd),
                 ),
                 onPressed: _clearHistory,
               ),
@@ -241,8 +242,8 @@ class _RecentlyPlayedScreenState extends State<RecentlyPlayedScreen> {
                   ),
                   // Center icon
                   Container(
-                    width: 72,
-                    height: 72,
+                    width: context.scaleSize(AppConstants.containerSizeXl),
+                    height: context.scaleSize(AppConstants.containerSizeXl),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: AppColors.glassBackground,
@@ -253,7 +254,7 @@ class _RecentlyPlayedScreenState extends State<RecentlyPlayedScreen> {
                     ),
                     child: Icon(
                       LucideIcons.clock,
-                      size: 32,
+                      size: context.responsiveIcon(AppConstants.iconSizeXl),
                       color: context.adaptiveTextTertiary,
                     ),
                   ),
@@ -352,7 +353,7 @@ class _RecentlyPlayedScreenState extends State<RecentlyPlayedScreen> {
         ),
         // Horizontal scrollable cards
         SizedBox(
-          height: 160,
+          height: context.scaleSize(AppConstants.cardHeightMd),
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(
@@ -427,7 +428,7 @@ class _RecentlyPlayedCard extends StatelessWidget {
                 sigmaY: AppConstants.glassBlurSigmaLight,
               ),
               child: Container(
-                width: 120,
+                width: context.scaleSize(AppConstants.cardWidthMd),
                 decoration: BoxDecoration(
                   color: AppColors.glassBackground,
                   borderRadius: BorderRadius.circular(AppConstants.radiusLg),
@@ -482,7 +483,9 @@ class _RecentlyPlayedCard extends StatelessWidget {
                             children: [
                               Icon(
                                 LucideIcons.clock,
-                                size: 10,
+                                size: context.responsiveIcon(
+                                  AppConstants.iconSizeXs,
+                                ),
                                 color: context.adaptiveTextTertiary,
                               ),
                               const SizedBox(width: 4),
@@ -513,7 +516,7 @@ class _RecentlyPlayedCard extends StatelessWidget {
       child: Icon(
         LucideIcons.music,
         color: context.adaptiveTextTertiary.withValues(alpha: 0.5),
-        size: 28,
+        size: context.responsiveIcon(AppConstants.iconSizeLg),
       ),
     );
   }

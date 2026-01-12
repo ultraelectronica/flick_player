@@ -6,6 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flick/core/theme/app_colors.dart';
 import 'package:flick/core/theme/adaptive_color_provider.dart';
 import 'package:flick/core/constants/app_constants.dart';
+import 'package:flick/core/utils/responsive.dart';
 import 'package:flick/models/song.dart';
 import 'package:flick/data/repositories/song_repository.dart';
 import 'package:flick/services/music_folder_service.dart';
@@ -96,7 +97,7 @@ class _FoldersScreenState extends State<FoldersScreen> {
               icon: Icon(
                 LucideIcons.arrowLeft,
                 color: context.adaptiveTextPrimary,
-                size: 20,
+                size: context.responsiveIcon(AppConstants.iconSizeMd),
               ),
               onPressed: () => Navigator.of(context).pop(),
             ),
@@ -140,7 +141,7 @@ class _FoldersScreenState extends State<FoldersScreen> {
         children: [
           Icon(
             LucideIcons.folderOpen,
-            size: 64,
+            size: context.responsiveIcon(AppConstants.containerSizeLg),
             color: context.adaptiveTextTertiary.withValues(alpha: 0.5),
           ),
           const SizedBox(height: AppConstants.spacingLg),
@@ -211,8 +212,8 @@ class _FolderCard extends StatelessWidget {
                   children: [
                     // Folder icon
                     Container(
-                      width: 56,
-                      height: 56,
+                      width: context.scaleSize(56),
+                      height: context.scaleSize(56),
                       decoration: BoxDecoration(
                         color: AppColors.glassBackgroundStrong,
                         borderRadius: BorderRadius.circular(
@@ -223,7 +224,7 @@ class _FolderCard extends StatelessWidget {
                       child: Icon(
                         LucideIcons.folder,
                         color: context.adaptiveTextSecondary,
-                        size: 28,
+                        size: context.responsiveIcon(AppConstants.iconSizeLg),
                       ),
                     ),
                     const SizedBox(width: AppConstants.spacingMd),
@@ -254,7 +255,7 @@ class _FolderCard extends StatelessWidget {
                     Icon(
                       LucideIcons.chevronRight,
                       color: context.adaptiveTextTertiary,
-                      size: 20,
+                      size: context.responsiveIcon(AppConstants.iconSizeMd),
                     ),
                   ],
                 ),

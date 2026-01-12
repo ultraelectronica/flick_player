@@ -5,6 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flick/core/theme/app_colors.dart';
 import 'package:flick/core/theme/adaptive_color_provider.dart';
 import 'package:flick/core/constants/app_constants.dart';
+import 'package:flick/core/utils/responsive.dart';
 import 'package:flick/services/music_folder_service.dart';
 import 'package:flick/services/library_scanner_service.dart';
 import 'package:flick/services/permission_service.dart';
@@ -856,16 +857,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Row(
         children: [
           Container(
-            width: 40,
-            height: 40,
+            width: context.scaleSize(AppConstants.containerSizeSm),
+            height: context.scaleSize(AppConstants.containerSizeSm),
             decoration: BoxDecoration(
               color: AppColors.glassBackgroundStrong,
               borderRadius: BorderRadius.circular(AppConstants.radiusSm),
             ),
-            child: const Icon(
+            child: Icon(
               LucideIcons.music,
               color: AppColors.textSecondary,
-              size: 20,
+              size: context.responsiveIcon(AppConstants.iconSizeMd),
             ),
           ),
           const SizedBox(width: AppConstants.spacingMd),
@@ -930,8 +931,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Row(
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: context.scaleSize(AppConstants.containerSizeSm),
+              height: context.scaleSize(AppConstants.containerSizeSm),
               decoration: BoxDecoration(
                 color: AppColors.glassBackgroundStrong,
                 borderRadius: BorderRadius.circular(AppConstants.radiusSm),
@@ -939,7 +940,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: Icon(
                 LucideIcons.folder,
                 color: context.adaptiveTextSecondary,
-                size: 20,
+                size: context.responsiveIcon(AppConstants.iconSizeMd),
               ),
             ),
             const SizedBox(width: AppConstants.spacingMd),
@@ -961,7 +962,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               icon: Icon(
                 LucideIcons.trash2,
                 color: context.adaptiveTextTertiary,
-                size: 18,
+                size: context.responsiveIcon(AppConstants.iconSizeSm),
               ),
               onPressed: () => _confirmRemoveFolder(folder),
             ),
@@ -1010,8 +1011,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Row(
             children: [
               Container(
-                width: 40,
-                height: 40,
+                width: context.scaleSize(AppConstants.containerSizeSm),
+                height: context.scaleSize(AppConstants.containerSizeSm),
                 decoration: BoxDecoration(
                   color: AppColors.glassBackgroundStrong,
                   borderRadius: BorderRadius.circular(AppConstants.radiusSm),
@@ -1021,7 +1022,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   color: onTap != null
                       ? context.adaptiveTextSecondary
                       : context.adaptiveTextTertiary,
-                  size: 20,
+                  size: context.responsiveIcon(AppConstants.iconSizeMd),
                 ),
               ),
               const SizedBox(width: AppConstants.spacingMd),
@@ -1103,8 +1104,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               // Icon
               Container(
-                width: 40,
-                height: 40,
+                width: context.scaleSize(AppConstants.containerSizeSm),
+                height: context.scaleSize(AppConstants.containerSizeSm),
                 decoration: BoxDecoration(
                   color: AppColors.glassBackgroundStrong,
                   borderRadius: BorderRadius.circular(AppConstants.radiusSm),
@@ -1112,7 +1113,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 child: Icon(
                   icon,
                   color: context.adaptiveTextSecondary,
-                  size: 20,
+                  size: context.responsiveIcon(AppConstants.iconSizeMd),
                 ),
               ),
 

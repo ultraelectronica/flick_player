@@ -6,6 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flick/core/theme/app_colors.dart';
 import 'package:flick/core/theme/adaptive_color_provider.dart';
 import 'package:flick/core/constants/app_constants.dart';
+import 'package:flick/core/utils/responsive.dart';
 import 'package:flick/models/song.dart';
 import 'package:flick/data/repositories/song_repository.dart';
 import 'package:flick/services/player_service.dart';
@@ -105,7 +106,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
               icon: Icon(
                 LucideIcons.arrowLeft,
                 color: context.adaptiveTextPrimary,
-                size: 20,
+                size: context.responsiveIcon(AppConstants.iconSizeMd),
               ),
               onPressed: () => Navigator.of(context).pop(),
             ),
@@ -149,7 +150,7 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
         children: [
           Icon(
             LucideIcons.disc,
-            size: 64,
+            size: context.responsiveIcon(AppConstants.containerSizeLg),
             color: context.adaptiveTextTertiary.withValues(alpha: 0.5),
           ),
           const SizedBox(height: AppConstants.spacingLg),
@@ -181,8 +182,8 @@ class _AlbumsScreenState extends State<AlbumsScreen> {
         right: AppConstants.spacingMd,
         bottom: AppConstants.navBarHeight + 120,
       ),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: context.gridColumns(compact: 2, phone: 2, tablet: 3),
         childAspectRatio: 0.85,
         crossAxisSpacing: AppConstants.spacingMd,
         mainAxisSpacing: AppConstants.spacingMd,
@@ -348,7 +349,7 @@ class _AlbumCardState extends State<_AlbumCard>
     return Center(
       child: Icon(
         LucideIcons.disc,
-        size: 40,
+        size: context.responsiveIcon(AppConstants.containerSizeSm),
         color: context.adaptiveTextTertiary.withValues(alpha: 0.5),
       ),
     );
@@ -533,8 +534,8 @@ class _SongTile extends StatelessWidget {
             children: [
               // Album art thumbnail
               Container(
-                width: 48,
-                height: 48,
+                width: context.scaleSize(AppConstants.containerSizeMd),
+                height: context.scaleSize(AppConstants.containerSizeMd),
                 decoration: BoxDecoration(
                   color: AppColors.glassBackground,
                   borderRadius: BorderRadius.circular(AppConstants.radiusSm),
@@ -550,7 +551,9 @@ class _SongTile extends StatelessWidget {
                           errorBuilder: (_, _, _) => Icon(
                             LucideIcons.music,
                             color: context.adaptiveTextTertiary,
-                            size: 20,
+                            size: context.responsiveIcon(
+                              AppConstants.iconSizeMd,
+                            ),
                           ),
                         ),
                       )

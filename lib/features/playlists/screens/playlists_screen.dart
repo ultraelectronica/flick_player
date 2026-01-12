@@ -5,6 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flick/core/theme/app_colors.dart';
 import 'package:flick/core/theme/adaptive_color_provider.dart';
 import 'package:flick/core/constants/app_constants.dart';
+import 'package:flick/core/utils/responsive.dart';
 
 /// Playlists screen with glassmorphic playlist cards.
 class PlaylistsScreen extends StatelessWidget {
@@ -47,7 +48,7 @@ class PlaylistsScreen extends StatelessWidget {
               icon: Icon(
                 LucideIcons.arrowLeft,
                 color: context.adaptiveTextPrimary,
-                size: 20,
+                size: context.responsiveIcon(AppConstants.iconSizeMd),
               ),
               onPressed: () => Navigator.of(context).pop(),
             ),
@@ -155,7 +156,7 @@ class PlaylistsScreen extends StatelessWidget {
         child: Icon(
           LucideIcons.listMusic,
           color: context.adaptiveTextTertiary.withValues(alpha: 0.5),
-          size: 32,
+          size: context.responsiveIcon(AppConstants.iconSizeXl),
         ),
       ),
     );
