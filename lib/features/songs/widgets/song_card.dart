@@ -42,89 +42,111 @@ class SongCard extends StatelessWidget {
     // Width constraint based on design request
     final cardWidth = MediaQuery.of(context).size.width * 0.75;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedOpacity(
-        duration: AppConstants.animationNormal,
-        opacity: opacity,
-        child: Transform.scale(
-          scale: scale,
-          child: SizedBox(
-            width: cardWidth,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(AppConstants.radiusLg),
-              child: Stack(
-                children: [
-                  // 1. Blurred Background Layer
-                  if (isSelected && song.albumArt != null)
-                    Positioned.fill(
-                      child: ImageFiltered(
-                        imageFilter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+    return RepaintBoundary(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedOpacity(
+          duration: AppConstants.animationNormal,
+          opacity: opacity,
+          child: Transform.scale(
+            scale: scale,
+            child: SizedBox(
+              width: cardWidth,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(AppConstants.radiusLg),
+                child: Stack(
+                  children: [
+                    // 1. Blurred Background Layer (only for selected cards)
+                    if (isSelected && song.albumArt != null)
+                      Positioned.fill(
+                        child: ImageFiltered(
+                          // Reduced from 30 to 15 for better performance
+                          imageFilter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                          child: Container(
+                            foregroundDecoration: BoxDecoration(
+                              color: Colors.black.withValues(
+                                alpha: 0.6,
+                              ), // Darken
+                            ),
+                            child: _buildRawImage(
+                              song.albumArt!,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                    // 2. Glass / Content Layer
+                    // Only apply BackdropFilter for selected cards to improve performance
+                    if (isSelected)
+                      BackdropFilter(
+                        filter: ImageFilter.blur(
+                          // Reduced from 5.0 to 3.0 for better performance
+                          sigmaX: 3.0,
+                          sigmaY: 3.0,
+                        ),
                         child: Container(
-                          foregroundDecoration: BoxDecoration(
-                            color: Colors.black.withValues(
-                              alpha: 0.6,
-                            ), // Darken
+                          padding: const EdgeInsets.all(AppConstants.spacingSm),
+                          decoration: BoxDecoration(
+                            color: AppColors.glassBackgroundStrong.withValues(
+                              alpha: 0.5,
+                            ), // More transparent for blur to show
+                            borderRadius: BorderRadius.circular(
+                              AppConstants.radiusLg,
+                            ),
+                            border: Border.all(
+                              color: AppColors.glassBorderStrong,
+                              width: 1.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.white.withValues(alpha: 0.05),
+                                blurRadius: 20,
+                                spreadRadius: 0,
+                              ),
+                            ],
                           ),
-                          child: _buildRawImage(
-                            song.albumArt!,
-                            fit: BoxFit.cover,
+                          child: Row(
+                            children: [
+                              // Album Art
+                              _buildAlbumArt(artSize),
+
+                              const SizedBox(width: AppConstants.spacingMd),
+
+                              // Song Info
+                              _buildSongInfo(context),
+                            ],
                           ),
                         ),
-                      ),
-                    ),
-
-                  // 2. Glass / Content Layer
-                  BackdropFilter(
-                    filter: ImageFilter.blur(
-                      sigmaX: isSelected
-                          ? 5.0
-                          : AppConstants.glassBlurSigmaLight,
-                      sigmaY: isSelected
-                          ? 5.0
-                          : AppConstants.glassBlurSigmaLight,
-                    ),
-                    child: Container(
-                      padding: const EdgeInsets.all(AppConstants.spacingSm),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? AppColors.glassBackgroundStrong.withValues(
-                                alpha: 0.5,
-                              ) // More transparent for blur to show
-                            : AppColors.glassBackground,
-                        borderRadius: BorderRadius.circular(
-                          AppConstants.radiusLg,
+                      )
+                    else
+                      // Non-selected cards: no blur, just solid background
+                      Container(
+                        padding: const EdgeInsets.all(AppConstants.spacingSm),
+                        decoration: BoxDecoration(
+                          color: AppColors.glassBackground,
+                          borderRadius: BorderRadius.circular(
+                            AppConstants.radiusLg,
+                          ),
+                          border: Border.all(
+                            color: AppColors.glassBorder,
+                            width: 1,
+                          ),
                         ),
-                        border: Border.all(
-                          color: isSelected
-                              ? AppColors.glassBorderStrong
-                              : AppColors.glassBorder,
-                          width: isSelected ? 1.5 : 1,
+                        child: Row(
+                          children: [
+                            // Album Art
+                            _buildAlbumArt(artSize),
+
+                            const SizedBox(width: AppConstants.spacingMd),
+
+                            // Song Info
+                            _buildSongInfo(context),
+                          ],
                         ),
-                        boxShadow: isSelected
-                            ? [
-                                BoxShadow(
-                                  color: Colors.white.withValues(alpha: 0.05),
-                                  blurRadius: 20,
-                                  spreadRadius: 0,
-                                ),
-                              ]
-                            : null,
                       ),
-                      child: Row(
-                        children: [
-                          // Album Art
-                          _buildAlbumArt(artSize),
-
-                          const SizedBox(width: AppConstants.spacingMd),
-
-                          // Song Info
-                          _buildSongInfo(context),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

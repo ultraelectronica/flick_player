@@ -701,213 +701,19 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                           height: 160,
                           child: Stack(
                             children: [
-                              // Waveform Layer
+                              // Waveform Layer - extracted to separate widget
                               Positioned.fill(
-                                child: ValueListenableBuilder<Duration>(
-                                  valueListenable:
-                                      _playerService.durationNotifier,
-                                  builder: (context, duration, _) {
-                                    if (duration.inMilliseconds == 0) {
-                                      return const SizedBox();
-                                    }
-
-                                    final screenWidth = MediaQuery.of(
-                                      context,
-                                    ).size.width;
-                                    final waveWidth = screenWidth * 4;
-                                    final progress =
-                                        _throttledPosition.inMilliseconds /
-                                        duration.inMilliseconds;
-                                    // Center the playhead
-                                    final offset =
-                                        -(progress * waveWidth) +
-                                        (screenWidth / 2);
-
-                                    return ClipRect(
-                                      child: OverflowBox(
-                                        maxWidth: waveWidth,
-                                        minWidth: waveWidth,
-                                        alignment: Alignment.centerLeft,
-                                        child: Transform.translate(
-                                          offset: Offset(offset, 0),
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                              vertical: 10,
-                                            ), // Padding for controls space
-                                            child: RepaintBoundary(
-                                              child: WaveformSeekBar(
-                                                barCount: 80,
-                                                position: _throttledPosition,
-                                                duration: duration,
-                                                onChanged: (newPos) {
-                                                  // Seeking on a scrolling waveform is tricky visually
-                                                  // Standard seek might feel weird if it jumps
-                                                  _playerService.seek(newPos);
-                                                },
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  },
+                                child: _WaveformLayer(
+                                  playerService: _playerService,
+                                  throttledPosition: _throttledPosition,
                                 ),
                               ),
 
-                              // Controls Layer (Overlay) including Time Labels
+                              // Controls Layer - extracted to separate widget
                               Center(
-                                child: ValueListenableBuilder<Duration>(
-                                  valueListenable:
-                                      _playerService.positionNotifier,
-                                  builder: (context, position, _) {
-                                    return ValueListenableBuilder<Duration>(
-                                      valueListenable:
-                                          _playerService.durationNotifier,
-                                      builder: (context, duration, _) {
-                                        return Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            // Current Time
-                                            Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 12,
-                                                    vertical: 8,
-                                                  ),
-                                              decoration: BoxDecoration(
-                                                color: const Color(
-                                                  0xFF121212,
-                                                ).withValues(alpha: 0.6),
-                                                borderRadius:
-                                                    BorderRadius.circular(20),
-                                              ),
-                                              child: Text(
-                                                _formatDuration(position),
-                                                style: const TextStyle(
-                                                  fontFamily: 'ProductSans',
-                                                  fontSize: 12,
-                                                  color: AppColors.textPrimary,
-                                                  fontFeatures: [
-                                                    FontFeature.tabularFigures(),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 16),
-                                            // Previous
-                                            Container(
-                                              decoration: BoxDecoration(
-                                                color: const Color(
-                                                  0xFF121212,
-                                                ).withValues(alpha: 0.6),
-                                                shape: BoxShape.circle,
-                                              ),
-                                              child: IconButton(
-                                                onPressed: () =>
-                                                    _playerService.previous(),
-                                                iconSize: 24,
-                                                icon: Icon(
-                                                  LucideIcons.skipBack,
-                                                  color: context
-                                                      .adaptiveTextPrimary,
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 24),
-                                            // Play/Pause
-                                            ValueListenableBuilder<bool>(
-                                              valueListenable: _playerService
-                                                  .isPlayingNotifier,
-                                              builder: (context, isPlaying, _) {
-                                                return Container(
-                                                  width: 72,
-                                                  height: 72,
-                                                  decoration: BoxDecoration(
-                                                    shape: BoxShape.circle,
-                                                    color: const Color(
-                                                      0xFF121212,
-                                                    ).withValues(alpha: 0.6),
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        color: AppColors.accent
-                                                            .withValues(
-                                                              alpha: 0.4,
-                                                            ),
-                                                        blurRadius: 24,
-                                                        offset: const Offset(
-                                                          0,
-                                                          8,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  child: IconButton(
-                                                    onPressed: () =>
-                                                        _playerService
-                                                            .togglePlayPause(),
-                                                    iconSize: 32,
-                                                    icon: Icon(
-                                                      isPlaying
-                                                          ? LucideIcons.pause
-                                                          : LucideIcons.play,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                );
-                                              },
-                                            ),
-                                            const SizedBox(width: 24),
-                                            // Next
-                                            Container(
-                                              decoration: BoxDecoration(
-                                                color: const Color(
-                                                  0xFF121212,
-                                                ).withValues(alpha: 0.6),
-                                                shape: BoxShape.circle,
-                                              ),
-                                              child: IconButton(
-                                                onPressed: () =>
-                                                    _playerService.next(),
-                                                iconSize: 24,
-                                                icon: Icon(
-                                                  LucideIcons.skipForward,
-                                                  color: context
-                                                      .adaptiveTextPrimary,
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 16),
-                                            // Total Duration
-                                            Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 12,
-                                                    vertical: 8,
-                                                  ),
-                                              decoration: BoxDecoration(
-                                                color: const Color(
-                                                  0xFF121212,
-                                                ).withValues(alpha: 0.6),
-                                                borderRadius:
-                                                    BorderRadius.circular(20),
-                                              ),
-                                              child: Text(
-                                                _formatDuration(duration),
-                                                style: const TextStyle(
-                                                  fontFamily: 'ProductSans',
-                                                  fontSize: 12,
-                                                  color: AppColors.textPrimary,
-                                                  fontFeatures: [
-                                                    FontFeature.tabularFigures(),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    );
-                                  },
+                                child: _PlayerControls(
+                                  playerService: _playerService,
+                                  formatDuration: _formatDuration,
                                 ),
                               ),
                             ],
@@ -934,6 +740,211 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                     ),
                   ),
                 ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Extracted waveform layer widget to reduce nesting and improve performance
+class _WaveformLayer extends StatelessWidget {
+  final PlayerService playerService;
+  final Duration throttledPosition;
+
+  const _WaveformLayer({
+    required this.playerService,
+    required this.throttledPosition,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return RepaintBoundary(
+      child: ValueListenableBuilder<Duration>(
+        valueListenable: playerService.durationNotifier,
+        builder: (context, duration, _) {
+          if (duration.inMilliseconds == 0) {
+            return const SizedBox();
+          }
+
+          final screenWidth = MediaQuery.of(context).size.width;
+          final waveWidth = screenWidth * 4;
+          final progress =
+              throttledPosition.inMilliseconds / duration.inMilliseconds;
+          // Center the playhead
+          final offset = -(progress * waveWidth) + (screenWidth / 2);
+
+          return ClipRect(
+            child: OverflowBox(
+              maxWidth: waveWidth,
+              minWidth: waveWidth,
+              alignment: Alignment.centerLeft,
+              child: Transform.translate(
+                offset: Offset(offset, 0),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: RepaintBoundary(
+                    child: WaveformSeekBar(
+                      barCount: 80,
+                      position: throttledPosition,
+                      duration: duration,
+                      onChanged: (newPos) {
+                        playerService.seek(newPos);
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Extracted player controls widget to reduce nesting and improve performance
+class _PlayerControls extends StatelessWidget {
+  final PlayerService playerService;
+  final String Function(Duration) formatDuration;
+
+  const _PlayerControls({
+    required this.playerService,
+    required this.formatDuration,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return RepaintBoundary(
+      child: ValueListenableBuilder<Duration>(
+        valueListenable: playerService.positionNotifier,
+        builder: (context, position, _) {
+          return ValueListenableBuilder<Duration>(
+            valueListenable: playerService.durationNotifier,
+            builder: (context, duration, _) {
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Current Time
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF121212).withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      formatDuration(position),
+                      style: const TextStyle(
+                        fontFamily: 'ProductSans',
+                        fontSize: 12,
+                        color: AppColors.textPrimary,
+                        fontFeatures: [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  // Previous
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF121212).withValues(alpha: 0.6),
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      onPressed: () => playerService.previous(),
+                      iconSize: 24,
+                      icon: Icon(
+                        LucideIcons.skipBack,
+                        color: context.adaptiveTextPrimary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 24),
+                  // Play/Pause - separate widget to minimize rebuilds
+                  _PlayPauseButton(playerService: playerService),
+                  const SizedBox(width: 24),
+                  // Next
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF121212).withValues(alpha: 0.6),
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      onPressed: () => playerService.next(),
+                      iconSize: 24,
+                      icon: Icon(
+                        LucideIcons.skipForward,
+                        color: context.adaptiveTextPrimary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  // Total Duration
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF121212).withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      formatDuration(duration),
+                      style: const TextStyle(
+                        fontFamily: 'ProductSans',
+                        fontSize: 12,
+                        color: AppColors.textPrimary,
+                        fontFeatures: [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Extracted play/pause button to minimize rebuilds when only play state changes
+class _PlayPauseButton extends StatelessWidget {
+  final PlayerService playerService;
+
+  const _PlayPauseButton({required this.playerService});
+
+  @override
+  Widget build(BuildContext context) {
+    return RepaintBoundary(
+      child: ValueListenableBuilder<bool>(
+        valueListenable: playerService.isPlayingNotifier,
+        builder: (context, isPlaying, _) {
+          return Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFF121212).withValues(alpha: 0.6),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.accent.withValues(alpha: 0.4),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: IconButton(
+              onPressed: () => playerService.togglePlayPause(),
+              iconSize: 32,
+              icon: Icon(
+                isPlaying ? LucideIcons.pause : LucideIcons.play,
+                color: Colors.white,
               ),
             ),
           );

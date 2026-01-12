@@ -14,24 +14,27 @@ class AmbientBackground extends StatelessWidget {
       return const SizedBox();
     }
 
-    return Stack(
-      children: [
-        // Brighter background image with increased opacity
-        Positioned.fill(
-          child: Image.file(
-            File(song!.albumArt!),
-            fit: BoxFit.cover,
-            opacity: const AlwaysStoppedAnimation(0.6),
+    return RepaintBoundary(
+      child: Stack(
+        children: [
+          // Brighter background image with increased opacity
+          Positioned.fill(
+            child: Image.file(
+              File(song!.albumArt!),
+              fit: BoxFit.cover,
+              opacity: const AlwaysStoppedAnimation(0.6),
+            ),
           ),
-        ),
-        // Lighter overlay for "brighter" effect
-        Positioned.fill(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
-            child: Container(color: Colors.black.withValues(alpha: 0.3)),
+          // Blurred overlay - reduced sigma from 80 to 25 for better performance
+          // Wrapped in RepaintBoundary to isolate expensive blur operations
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+              child: Container(color: Colors.black.withValues(alpha: 0.3)),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
