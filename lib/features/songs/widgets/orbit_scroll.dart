@@ -40,6 +40,14 @@ class _OrbitScrollState extends State<OrbitScroll>
 
   // The physics state
   double _scrollOffset = 0.0;
+  
+  // Track if we're actively scrolling to reduce visible range when idle
+  bool _isScrolling = false;
+  DateTime _lastScrollTime = DateTime.now();
+  
+  // Cache for transform calculations
+  final Map<String, _Position> _positionCache = {};
+  final Map<String, _ItemTransform> _transformCache = {};
 
   @override
   void initState() {
@@ -74,6 +82,11 @@ class _OrbitScrollState extends State<OrbitScroll>
     if (_controller.isAnimating) {
       setState(() {
         _scrollOffset = _controller.value;
+        _isScrolling = true;
+        _lastScrollTime = DateTime.now();
+        // Clear cache when scrolling as positions change
+        _positionCache.clear();
+        _transformCache.clear();
       });
 
       // Report index changes while scrolling
@@ -84,6 +97,14 @@ class _OrbitScrollState extends State<OrbitScroll>
         // Debounce or check duplicates is handled by listener usually,
         // but we'll leave it to the parent to handle strictness.
         // For purely visual updates, this is fine.
+      }
+    } else {
+      // Check if we've stopped scrolling (idle for 100ms)
+      final now = DateTime.now();
+      if (_isScrolling && now.difference(_lastScrollTime).inMilliseconds > 100) {
+        setState(() {
+          _isScrolling = false;
+        });
       }
     }
   }
@@ -140,6 +161,11 @@ class _OrbitScrollState extends State<OrbitScroll>
 
     setState(() {
       _scrollOffset = newOffset;
+      _isScrolling = true;
+      _lastScrollTime = DateTime.now();
+      // Clear cache when scrolling as positions change
+      _positionCache.clear();
+      _transformCache.clear();
     });
   }
 
@@ -206,6 +232,8 @@ class _OrbitScrollState extends State<OrbitScroll>
       // Ensure we explicitly set the final state to avoid micro-drifts
       setState(() {
         _scrollOffset = target;
+        _isScrolling = false;
+        _lastScrollTime = DateTime.now();
       });
       final finalIndex = target.round();
       if (finalIndex >= 0 && finalIndex < widget.songs.length) {
@@ -256,17 +284,19 @@ class _OrbitScrollState extends State<OrbitScroll>
     return Positioned(
       left: x - 120, // Slightly larger glow
       top: y - 120,
-      child: Container(
-        width: 240,
-        height: 240,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: RadialGradient(
-            colors: [
-              AppColors.accent.withValues(alpha: 0.15),
-              Colors.transparent,
-            ],
-            stops: const [0.0, 0.7],
+      child: RepaintBoundary(
+        child: Container(
+          width: 240,
+          height: 240,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: RadialGradient(
+              colors: [
+                AppColors.accent.withValues(alpha: 0.15),
+                Colors.transparent,
+              ],
+              stops: const [0.0, 0.7],
+            ),
           ),
         ),
       ),
@@ -274,20 +304,24 @@ class _OrbitScrollState extends State<OrbitScroll>
   }
 
   Widget _buildOrbitPath(double centerX, double centerY, double radius) {
-    return CustomPaint(
-      size: Size.infinite,
-      painter: _OrbitPathPainter(
-        centerX: centerX,
-        centerY: centerY,
-        radius: radius,
+    return RepaintBoundary(
+      child: CustomPaint(
+        size: Size.infinite,
+        painter: _OrbitPathPainter(
+          centerX: centerX,
+          centerY: centerY,
+          radius: radius,
+        ),
       ),
     );
   }
 
   List<Widget> _buildSongItems(double centerX, double centerY, double radius) {
     final List<Widget> items = [];
-    // Increase visible range for smoother scrolling entry/exit
-    final visibleRange = AppConstants.orbitVisibleItems ~/ 2 + 3;
+    
+    // Dynamic visible range: larger when scrolling, smaller when idle
+    final baseRange = AppConstants.orbitVisibleItems ~/ 2;
+    final visibleRange = _isScrolling ? baseRange + 3 : baseRange + 1;
 
     final orderedIndices = <int>[];
     for (var i = -visibleRange; i <= visibleRange; i++) {
@@ -298,68 +332,70 @@ class _OrbitScrollState extends State<OrbitScroll>
 
     for (final relativeIndex in orderedIndices) {
       // Determine which song index this slot corresponds to
-      // Logic:
-      // If we are at offset 5.2:
-      // relative 0 => index 5 (closest)
-      // relative 1 => index 6
-      // relative -1 => index 4
-      // This part handles the "infinite" feel or just mapping relative to absolute
       final centerIndex = _scrollOffset.round();
       final actualIndex = centerIndex + relativeIndex;
 
       if (actualIndex < 0 || actualIndex >= widget.songs.length) continue;
 
       // Calculate the visual offset angle based on exact scroll position
-      // _scrollOffset = 5.2
-      // actualIndex = 5 (center)
-      // relativeIndex = 0
-      // diff = 5 - 5.2 = -0.2 (It's slightly above center)
       final diff = actualIndex.toDouble() - _scrollOffset;
 
-      final position = _calculateItemPosition(diff, centerX, centerY, radius);
+      // Use cached transform if available
+      final cacheKey = '${diff.toStringAsFixed(2)}_${centerX.toStringAsFixed(1)}_${centerY.toStringAsFixed(1)}_${radius.toStringAsFixed(1)}';
+      _ItemTransform? transform = _transformCache[cacheKey];
+      
+      if (transform == null) {
+        final position = _calculateItemPosition(diff, centerX, centerY, radius);
+        final distanceFromCenter = diff.abs();
 
-      final distanceFromCenter = diff.abs();
+        // Dynamic scaling based on distance
+        double scale;
+        if (distanceFromCenter < 0.5) {
+          scale = AppConstants.orbitSelectedScale;
+        } else if (distanceFromCenter < 1.5) {
+          scale = AppConstants.orbitAdjacentScale;
+        } else {
+          scale = AppConstants.orbitDistantScale - (distanceFromCenter - 1.5) * 0.12;
+        }
+        scale = scale.clamp(0.0, 1.25);
 
-      // Dynamic scaling based on distance
-      double scale;
-      if (distanceFromCenter < 0.5) {
-        scale = AppConstants.orbitSelectedScale;
-      } else if (distanceFromCenter < 1.5) {
-        scale = AppConstants.orbitAdjacentScale;
-      } else {
-        scale =
-            AppConstants.orbitDistantScale - (distanceFromCenter - 1.5) * 0.12;
+        if (scale < 0.1) continue;
+
+        double opacity = 1.0 - (distanceFromCenter * 0.25);
+        opacity = opacity.clamp(0.0, 1.0);
+
+        final isSelected = distanceFromCenter < 0.4;
+
+        transform = _ItemTransform(
+          position: position,
+          scale: scale,
+          opacity: opacity,
+          isSelected: isSelected,
+        );
+        
+        // Cache the transform (only when not scrolling to avoid cache churn)
+        if (!_isScrolling) {
+          _transformCache[cacheKey] = transform;
+        }
       }
-      scale = scale.clamp(0.0, 1.25);
-
-      if (scale < 0.1) continue;
-
-      double opacity = 1.0 - (distanceFromCenter * 0.25);
-      opacity = opacity.clamp(0.0, 1.0);
-
-      // Tilt effect: rotate items slightly as they move up/down
-      // Simple rotation: proportional to angle?
-      // Actually, standard list items don't rotate, but for orbit it might look cool.
-      // Let's keep it simple for now to match the "Revamp scrolling" request primarily about feel.
-
-      final isSelected =
-          distanceFromCenter < 0.4; // Tighter selection threshold
 
       items.add(
         Positioned(
-          left: position.x,
-          top: position.y,
+          left: transform.position.x,
+          top: transform.position.y,
           child: FractionalTranslation(
             translation: const Offset(-0.5, -0.5),
-            child: SongCard(
-              song: widget.songs[actualIndex],
-              scale: scale,
-              opacity: opacity,
-              isSelected: isSelected,
-              onTap: () {
-                _animateTo(actualIndex.toDouble());
-                widget.onSongSelected?.call(actualIndex);
-              },
+            child: RepaintBoundary(
+              child: SongCard(
+                song: widget.songs[actualIndex],
+                scale: transform.scale,
+                opacity: transform.opacity,
+                isSelected: transform.isSelected,
+                onTap: () {
+                  _animateTo(actualIndex.toDouble());
+                  widget.onSongSelected?.call(actualIndex);
+                },
+              ),
             ),
           ),
         ),
@@ -375,19 +411,27 @@ class _OrbitScrollState extends State<OrbitScroll>
     double centerY,
     double radius,
   ) {
-    // Relative index acts as the angle factor
-    // 0 = Center right (0 degrees in our logic?)
-    // Actually, in the previous code:
-    // angle = relativeIndex * spacing
-    // x = center + radius * cos(angle)
-    // y = center + radius * sin(angle)
+    // Cache key for position calculation
+    final cacheKey = '${relativeIndex.toStringAsFixed(3)}_${centerX.toStringAsFixed(1)}_${centerY.toStringAsFixed(1)}_${radius.toStringAsFixed(1)}';
+    
+    // Return cached position if available
+    if (_positionCache.containsKey(cacheKey)) {
+      return _positionCache[cacheKey]!;
+    }
 
+    // Calculate position
     final angle = relativeIndex * AppConstants.orbitItemSpacing;
-
     final x = centerX + radius * math.cos(angle);
     final y = centerY + radius * math.sin(angle);
 
-    return _Position(x, y);
+    final position = _Position(x, y);
+    
+    // Cache the position (only when not scrolling to avoid cache churn)
+    if (!_isScrolling) {
+      _positionCache[cacheKey] = position;
+    }
+    
+    return position;
   }
 }
 
@@ -395,6 +439,21 @@ class _Position {
   final double x;
   final double y;
   const _Position(this.x, this.y);
+}
+
+/// Cached transform data for orbit items
+class _ItemTransform {
+  final _Position position;
+  final double scale;
+  final double opacity;
+  final bool isSelected;
+
+  const _ItemTransform({
+    required this.position,
+    required this.scale,
+    required this.opacity,
+    required this.isSelected,
+  });
 }
 
 class _OrbitPathPainter extends CustomPainter {
