@@ -10,7 +10,6 @@ import 'package:flick/services/favorites_service.dart';
 import 'package:flick/features/player/widgets/waveform_seek_bar.dart';
 import 'package:flick/features/player/widgets/ambient_background.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:flick/widgets/navigation/flick_nav_bar.dart';
 import 'package:flick/widgets/common/cached_image_widget.dart';
 
@@ -746,6 +745,7 @@ class _FullPlayerScreenState extends State<FullPlayerScreen>
                                 child: _WaveformLayer(
                                   playerService: _playerService,
                                   throttledPosition: _throttledPosition,
+                                  currentSong: song,
                                 ),
                               ),
 
@@ -754,6 +754,7 @@ class _FullPlayerScreenState extends State<FullPlayerScreen>
                                 child: _PlayerControls(
                                   playerService: _playerService,
                                   formatDuration: _formatDuration,
+                                  currentSong: song,
                                 ),
                               ),
                             ],
@@ -793,54 +794,60 @@ class _FullPlayerScreenState extends State<FullPlayerScreen>
 class _WaveformLayer extends StatelessWidget {
   final PlayerService playerService;
   final Duration throttledPosition;
+  final Song? currentSong;
 
   const _WaveformLayer({
     required this.playerService,
     required this.throttledPosition,
+    required this.currentSong,
   });
 
   @override
   Widget build(BuildContext context) {
-    return RepaintBoundary(
-      child: ValueListenableBuilder<Duration>(
-        valueListenable: playerService.durationNotifier,
-        builder: (context, duration, _) {
-          if (duration.inMilliseconds == 0) {
-            return const SizedBox();
-          }
+    return ValueListenableBuilder<Duration>(
+      valueListenable: playerService.durationNotifier,
+      builder: (context, engineDuration, _) {
+        // Use engine duration if available, otherwise fallback to song duration
+        final duration = engineDuration.inMilliseconds > 0
+            ? engineDuration
+            : (currentSong?.duration ?? Duration.zero);
 
-          final screenWidth = MediaQuery.of(context).size.width;
-          final waveWidth = screenWidth * 4;
-          final progress =
-              throttledPosition.inMilliseconds / duration.inMilliseconds;
-          // Center the playhead
-          final offset = -(progress * waveWidth) + (screenWidth / 2);
+        if (duration.inMilliseconds == 0) {
+          return const SizedBox();
+        }
 
-          return ClipRect(
-            child: OverflowBox(
-              maxWidth: waveWidth,
-              minWidth: waveWidth,
-              alignment: Alignment.centerLeft,
-              child: Transform.translate(
-                offset: Offset(offset, 0),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  child: RepaintBoundary(
-                    child: WaveformSeekBar(
-                      barCount: 80,
-                      position: throttledPosition,
-                      duration: duration,
-                      onChanged: (newPos) {
-                        playerService.seek(newPos);
-                      },
-                    ),
+        final screenWidth = MediaQuery.of(context).size.width;
+        final waveWidth = screenWidth * 4;
+        final progress =
+            throttledPosition.inMilliseconds / duration.inMilliseconds;
+        // Center the playhead - clamp progress to avoid overflow
+        final clampedProgress = progress.clamp(0.0, 1.0);
+        final offset = -(clampedProgress * waveWidth) + (screenWidth / 2);
+
+        return ClipRect(
+          child: OverflowBox(
+            maxWidth: waveWidth,
+            minWidth: waveWidth,
+            alignment: Alignment.centerLeft,
+            child: Transform.translate(
+              offset: Offset(offset, 0),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: RepaintBoundary(
+                  child: WaveformSeekBar(
+                    barCount: 80,
+                    position: throttledPosition,
+                    duration: duration,
+                    onChanged: (newPos) {
+                      playerService.seek(newPos);
+                    },
                   ),
                 ),
               ),
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -849,10 +856,12 @@ class _WaveformLayer extends StatelessWidget {
 class _PlayerControls extends StatelessWidget {
   final PlayerService playerService;
   final String Function(Duration) formatDuration;
+  final Song? currentSong;
 
   const _PlayerControls({
     required this.playerService,
     required this.formatDuration,
+    required this.currentSong,
   });
 
   @override
@@ -863,7 +872,12 @@ class _PlayerControls extends StatelessWidget {
         builder: (context, position, _) {
           return ValueListenableBuilder<Duration>(
             valueListenable: playerService.durationNotifier,
-            builder: (context, duration, _) {
+            builder: (context, engineDuration, _) {
+              // Use engine duration if available, otherwise fallback to song duration
+              final duration = engineDuration.inMilliseconds > 0
+                  ? engineDuration
+                  : (currentSong?.duration ?? Duration.zero);
+
               return Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
