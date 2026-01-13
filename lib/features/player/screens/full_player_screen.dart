@@ -22,12 +22,19 @@ class FullPlayerScreen extends StatefulWidget {
   State<FullPlayerScreen> createState() => _FullPlayerScreenState();
 }
 
-class _FullPlayerScreenState extends State<FullPlayerScreen> {
+class _FullPlayerScreenState extends State<FullPlayerScreen>
+    with SingleTickerProviderStateMixin {
   final PlayerService _playerService = PlayerService();
   final FavoritesService _favoritesService = FavoritesService();
 
-  // Track drag offset for swipe-down to dismiss
-  double _dragOffset = 0;
+  // Animation controller for drag offset (replaces setState)
+  late AnimationController _dragController;
+
+  // Track current drag offset (updated directly, no setState)
+  double _dragOffset = 0.0;
+
+  // Last drag update time for throttling
+  DateTime _lastDragUpdate = DateTime.now();
 
   // Throttled position for waveform updates (updates every 100ms instead of every frame)
   Duration _throttledPosition = Duration.zero;
@@ -36,6 +43,16 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
   @override
   void initState() {
     super.initState();
+
+    // Initialize drag animation controller for smooth return animation
+    _dragController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+      lowerBound: 0.0,
+      upperBound: 1000.0, // Max drag distance
+    );
+    _dragController.value = 0.0;
+
     // Initialize with current position
     _throttledPosition = _playerService.positionNotifier.value;
     // Set up throttled position updates for waveform (100ms interval)
@@ -56,6 +73,7 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
   @override
   void dispose() {
     _positionThrottleTimer?.cancel();
+    _dragController.dispose();
     super.dispose();
   }
 
@@ -325,21 +343,38 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
           }
 
           return GestureDetector(
+            onVerticalDragStart: (_) {
+              _dragController.stop();
+            },
             onVerticalDragUpdate: (details) {
               // Only track downward drag
               if (details.delta.dy > 0) {
-                _dragOffset += details.delta.dy;
-                setState(() {});
+                // Throttle updates to every 16ms (~60fps) to avoid excessive updates
+                final now = DateTime.now();
+                if (now.difference(_lastDragUpdate).inMilliseconds < 16) {
+                  return;
+                }
+                _lastDragUpdate = now;
+
+                // Update drag offset directly (no setState)
+                _dragOffset = (_dragOffset + details.delta.dy).clamp(
+                  0.0,
+                  1000.0,
+                );
+                // Update controller value for AnimatedBuilder
+                _dragController.value = _dragOffset;
               }
             },
             onVerticalDragEnd: (details) {
               // If dragged down enough or with enough velocity, dismiss
               if (_dragOffset > 100 || details.primaryVelocity! > 500) {
                 Navigator.of(context).pop();
+                return;
               }
-              // Reset drag offset
-              _dragOffset = 0;
-              setState(() {});
+
+              // Animate back to 0
+              _dragOffset = 0.0;
+              _dragController.animateTo(0.0);
             },
             onHorizontalDragEnd: (details) {
               if (details.primaryVelocity! < -500) {
@@ -350,16 +385,21 @@ class _FullPlayerScreenState extends State<FullPlayerScreen> {
                 _playerService.previous();
               }
             },
-            child: AnimatedContainer(
-              duration: _dragOffset == 0
-                  ? const Duration(milliseconds: 200)
-                  : Duration.zero,
-              curve: Curves.easeOut,
-              transform: Matrix4.translationValues(0, _dragOffset * 0.5, 0),
+            child: AnimatedBuilder(
+              animation: _dragController,
+              builder: (context, child) {
+                // Use Transform.translate during drag (lightweight)
+                // Only use animation when releasing
+                final offset = _dragController.value * 0.5;
+                return Transform.translate(
+                  offset: Offset(0, offset),
+                  child: child!,
+                );
+              },
               child: Stack(
                 children: [
-                  // Ambient background
-                  AmbientBackground(song: song),
+                  // Ambient background - wrapped in RepaintBoundary
+                  RepaintBoundary(child: AmbientBackground(song: song)),
 
                   SafeArea(
                     child: Column(
