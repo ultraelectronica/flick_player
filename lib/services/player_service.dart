@@ -211,11 +211,14 @@ class PlayerService {
 
   void _onTrackEnded(String path) async {
     debugPrint(
-      '_onTrackEnded: path=$path, queuedNextPath=$_queuedNextPath, loopMode=${loopModeNotifier.value}',
+      '_onTrackEnded: path=$path, queuedNextPath=$_queuedNextPath, currentSongPath=${currentSongNotifier.value?.filePath}, rustCurrentPath=${_rustAudio.currentPath}, loopMode=${loopModeNotifier.value}',
     );
 
     // Check if we had a next track queued (which means Rust auto-transitioned)
     if (_useNativeAudio && _queuedNextPath != null) {
+      // Also check Rust's current path to confirm the transition
+      final rustCurrentPath = _rustAudio.currentPath;
+
       // Find the song that was queued (which Rust is now playing)
       final nextSong = _playlist.firstWhere(
         (song) => song.filePath == _queuedNextPath,
@@ -223,11 +226,22 @@ class PlayerService {
       );
 
       debugPrint(
-        '_onTrackEnded: Found nextSong=${nextSong.title}, currentSong=${currentSongNotifier.value?.title}',
+        '_onTrackEnded: Found nextSong=${nextSong.title} (path: ${nextSong.filePath}), currentSong=${currentSongNotifier.value?.title} (path: ${currentSongNotifier.value?.filePath}), rustCurrentPath=$rustCurrentPath',
       );
 
+      // Verify that Rust has actually transitioned to the next track
+      final rustTransitioned =
+          rustCurrentPath == _queuedNextPath ||
+          (rustCurrentPath != null && rustCurrentPath != path);
+
       // Update our state to match what Rust is now playing
-      if (nextSong != currentSongNotifier.value) {
+      // Check if the path matches the ended path (old track) or queued path (new track)
+      final endedPathMatchesCurrent =
+          currentSongNotifier.value?.filePath == path;
+
+      if ((nextSong != currentSongNotifier.value || !endedPathMatchesCurrent) &&
+          rustTransitioned) {
+        // Transition occurred - update state
         _currentIndex = _playlist.indexOf(nextSong);
         debugPrint('_onTrackEnded: Updated index to $_currentIndex');
         currentSongNotifier.value = nextSong;
@@ -241,7 +255,7 @@ class PlayerService {
         // Queue the next track for continued gapless playback
         await _queueNextTrackForGapless();
         debugPrint(
-          '_onTrackEnded: Queued next track, new queuedNextPath=$_queuedNextPath',
+          '_onTrackEnded: Transitioned from $path to ${nextSong.filePath}, queued next track: $_queuedNextPath',
         );
 
         // Rust has already moved to the next track, so we're done
@@ -250,7 +264,7 @@ class PlayerService {
         // This shouldn't happen, but if nextSong == currentSong, something went wrong
         // Clear the queued path and fall through to _onSongFinished to handle it
         debugPrint(
-          '_onTrackEnded: WARNING - nextSong == currentSong, falling through to _onSongFinished',
+          '_onTrackEnded: WARNING - nextSong == currentSong or Rust didn\'t transition, falling through to _onSongFinished',
         );
         _queuedNextPath = null;
       }
@@ -359,6 +373,20 @@ class PlayerService {
         );
 
         if (_useNativeAudio) {
+          // Check if Rust is already playing this song (gapless transition might have happened)
+          final rustCurrentPath = _rustAudio.currentPath;
+          if (rustCurrentPath == song.filePath &&
+              _rustAudio.isPlaying &&
+              currentSongNotifier.value?.filePath == song.filePath) {
+            // Rust is already playing this song - don't interrupt
+            debugPrint(
+              'play(): Rust already playing ${song.title}, skipping play() call to preserve gapless playback',
+            );
+            // Just ensure the next track is queued
+            await _queueNextTrackForGapless();
+            return;
+          }
+
           // Clear any previously queued track
           _queuedNextPath = null;
           await _rustAudio.play(song.filePath!);
