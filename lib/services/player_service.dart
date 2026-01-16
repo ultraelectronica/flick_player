@@ -76,6 +76,7 @@ class PlayerService {
   final List<Song> _playlist = [];
   final List<Song> _originalPlaylist = []; // For shuffle restore
   int _currentIndex = -1;
+  String? _queuedNextPath; // Track the path of the queued next track
 
   /// Whether native (Rust) audio engine is being used.
   bool get isUsingNativeAudio => _useNativeAudio;
@@ -208,7 +209,38 @@ class PlayerService {
     );
   }
 
-  void _onTrackEnded(String path) {
+  void _onTrackEnded(String path) async {
+    // Check if we had a next track queued (which means Rust auto-transitioned)
+    if (_useNativeAudio && _queuedNextPath != null) {
+      // Find the song that was queued (which Rust is now playing)
+      final nextSong = _playlist.firstWhere(
+        (song) => song.filePath == _queuedNextPath,
+        orElse: () => currentSongNotifier.value!,
+      );
+
+      // Update our state to match what Rust is now playing
+      if (nextSong != currentSongNotifier.value) {
+        _currentIndex = _playlist.indexOf(nextSong);
+        currentSongNotifier.value = nextSong;
+        _recentlyPlayedRepository.recordPlay(nextSong.id);
+        positionNotifier.value = Duration.zero;
+        await _updateNotificationState();
+
+        // Clear the queued path since we've transitioned
+        _queuedNextPath = null;
+
+        // Queue the next track for continued gapless playback
+        await _queueNextTrackForGapless();
+
+        // Rust has already moved to the next track, so we're done
+        return;
+      }
+
+      // Clear the queued path even if we didn't find a match
+      _queuedNextPath = null;
+    }
+
+    // No auto-transition happened, handle normally
     _onSongFinished();
   }
 
@@ -303,6 +335,7 @@ class PlayerService {
         );
 
         if (_useNativeAudio) {
+          _queuedNextPath = null; // Clear any previously queued track
           await _rustAudio.play(song.filePath!);
           await _queueNextTrackForGapless();
         } else {
@@ -327,6 +360,12 @@ class PlayerService {
     if (!_useNativeAudio) return;
     if (_playlist.isEmpty || _currentIndex < 0) return;
 
+    // Don't queue next track if we're in loop mode "one"
+    if (loopModeNotifier.value == LoopMode.one) {
+      _queuedNextPath = null;
+      return;
+    }
+
     Song? nextSong;
 
     if (_currentIndex < _playlist.length - 1) {
@@ -335,9 +374,12 @@ class PlayerService {
       nextSong = _playlist[0];
     }
 
-    if (nextSong?.filePath != null) {
-      await _rustAudio.queueNext(nextSong!.filePath!);
+    if (nextSong != null && nextSong.filePath != null) {
+      _queuedNextPath = nextSong.filePath;
+      await _rustAudio.queueNext(nextSong.filePath!);
       debugPrint('Queued next track for gapless: ${nextSong.title}');
+    } else {
+      _queuedNextPath = null;
     }
   }
 
