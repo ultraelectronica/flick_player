@@ -210,6 +210,10 @@ class PlayerService {
   }
 
   void _onTrackEnded(String path) async {
+    debugPrint(
+      '_onTrackEnded: path=$path, queuedNextPath=$_queuedNextPath, loopMode=${loopModeNotifier.value}',
+    );
+
     // Check if we had a next track queued (which means Rust auto-transitioned)
     if (_useNativeAudio && _queuedNextPath != null) {
       // Find the song that was queued (which Rust is now playing)
@@ -218,9 +222,14 @@ class PlayerService {
         orElse: () => currentSongNotifier.value!,
       );
 
+      debugPrint(
+        '_onTrackEnded: Found nextSong=${nextSong.title}, currentSong=${currentSongNotifier.value?.title}',
+      );
+
       // Update our state to match what Rust is now playing
       if (nextSong != currentSongNotifier.value) {
         _currentIndex = _playlist.indexOf(nextSong);
+        debugPrint('_onTrackEnded: Updated index to $_currentIndex');
         currentSongNotifier.value = nextSong;
         _recentlyPlayedRepository.recordPlay(nextSong.id);
         positionNotifier.value = Duration.zero;
@@ -231,16 +240,26 @@ class PlayerService {
 
         // Queue the next track for continued gapless playback
         await _queueNextTrackForGapless();
+        debugPrint(
+          '_onTrackEnded: Queued next track, new queuedNextPath=$_queuedNextPath',
+        );
 
         // Rust has already moved to the next track, so we're done
         return;
+      } else {
+        // This shouldn't happen, but if nextSong == currentSong, something went wrong
+        // Clear the queued path and fall through to _onSongFinished to handle it
+        debugPrint(
+          '_onTrackEnded: WARNING - nextSong == currentSong, falling through to _onSongFinished',
+        );
+        _queuedNextPath = null;
       }
-
-      // Clear the queued path even if we didn't find a match
-      _queuedNextPath = null;
     }
 
     // No auto-transition happened, handle normally
+    debugPrint(
+      '_onTrackEnded: No auto-transition (queuedNextPath was null or not using native audio), calling _onSongFinished. useNativeAudio=$_useNativeAudio',
+    );
     _onSongFinished();
   }
 
@@ -269,11 +288,16 @@ class PlayerService {
   }
 
   Future<void> _onSongFinished() async {
+    debugPrint(
+      '_onSongFinished: loopMode=${loopModeNotifier.value}, currentIndex=$_currentIndex, playlistLength=${_playlist.length}',
+    );
     if (loopModeNotifier.value == LoopMode.one) {
       if (currentSongNotifier.value != null) {
+        debugPrint('_onSongFinished: LoopMode.one, replaying current song');
         await play(currentSongNotifier.value!);
       }
     } else {
+      debugPrint('_onSongFinished: Calling next()');
       await next();
     }
   }
@@ -335,9 +359,15 @@ class PlayerService {
         );
 
         if (_useNativeAudio) {
-          _queuedNextPath = null; // Clear any previously queued track
+          // Clear any previously queued track
+          _queuedNextPath = null;
           await _rustAudio.play(song.filePath!);
+          // Queue the next track immediately after starting playback
+          // This ensures it's queued before the current track can end
           await _queueNextTrackForGapless();
+          debugPrint(
+            'play(): After queuing, _queuedNextPath=$_queuedNextPath for song: ${song.title}',
+          );
         } else {
           await _justAudioPlayer.setAudioSource(
             just_audio.AudioSource.uri(Uri.parse(song.filePath!)),
@@ -363,6 +393,7 @@ class PlayerService {
     // Don't queue next track if we're in loop mode "one"
     if (loopModeNotifier.value == LoopMode.one) {
       _queuedNextPath = null;
+      debugPrint('_queueNextTrackForGapless: LoopMode.one, not queuing');
       return;
     }
 
@@ -370,16 +401,30 @@ class PlayerService {
 
     if (_currentIndex < _playlist.length - 1) {
       nextSong = _playlist[_currentIndex + 1];
+      debugPrint(
+        '_queueNextTrackForGapless: Queueing next song at index ${_currentIndex + 1}: ${nextSong.title}',
+      );
     } else if (loopModeNotifier.value == LoopMode.all) {
+      // In LoopMode.all, wrap to first song (even if it's the same song when playlist has only 1 item)
       nextSong = _playlist[0];
+      debugPrint(
+        '_queueNextTrackForGapless: LoopMode.all, queueing first song (index 0): ${nextSong.title}, playlistLength=${_playlist.length}',
+      );
+    } else {
+      debugPrint(
+        '_queueNextTrackForGapless: End of playlist, LoopMode=${loopModeNotifier.value}, not queuing',
+      );
     }
 
     if (nextSong != null && nextSong.filePath != null) {
       _queuedNextPath = nextSong.filePath;
       await _rustAudio.queueNext(nextSong.filePath!);
-      debugPrint('Queued next track for gapless: ${nextSong.title}');
+      debugPrint(
+        '_queueNextTrackForGapless: Queued next track for gapless: ${nextSong.title}, path=$_queuedNextPath',
+      );
     } else {
       _queuedNextPath = null;
+      debugPrint('_queueNextTrackForGapless: No next song to queue');
     }
   }
 
@@ -482,13 +527,20 @@ class PlayerService {
   Future<void> next() async {
     if (_playlist.isEmpty) return;
 
+    debugPrint(
+      'next(): currentIndex=$_currentIndex, playlistLength=${_playlist.length}, loopMode=${loopModeNotifier.value}',
+    );
+
     if (_currentIndex < _playlist.length - 1) {
       _currentIndex++;
+      debugPrint('next(): Advancing to index $_currentIndex');
       await play(_playlist[_currentIndex]);
     } else if (loopModeNotifier.value == LoopMode.all) {
       _currentIndex = 0;
+      debugPrint('next(): LoopMode.all, wrapping to index 0');
       await play(_playlist[_currentIndex]);
     } else {
+      debugPrint('next(): End of playlist, pausing');
       await pause();
       await seek(Duration.zero);
     }
