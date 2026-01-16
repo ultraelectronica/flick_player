@@ -608,144 +608,146 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           // Settings sections
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppConstants.spacingMd,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Library section
-                  _buildSectionHeader(context, 'Library'),
-                  _buildLibraryCard(context),
+            child: RepaintBoundary(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppConstants.spacingMd,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Library section
+                    _buildSectionHeader(context, 'Library'),
+                    _buildLibraryCard(context),
 
-                  const SizedBox(height: AppConstants.spacingLg),
+                    const SizedBox(height: AppConstants.spacingLg),
 
-                  // Playback section
-                  _buildSectionHeader(context, 'Playback'),
-                  _buildSettingsCard(
-                    context,
-                    children: [
-                      _buildToggleSetting(
-                        context,
-                        icon: LucideIcons.repeat,
-                        title: 'Gapless Playback',
-                        subtitle: 'Seamless transition between tracks',
-                        value: _gaplessPlayback,
-                        onChanged: (value) {
-                          setState(() => _gaplessPlayback = value);
-                        },
-                      ),
-                      _buildDivider(),
-                      _buildToggleSetting(
-                        context,
-                        icon: LucideIcons.shuffle,
-                        title: 'Crossfade',
-                        subtitle: 'Blend tracks together',
-                        value: _crossfade,
-                        onChanged: (value) {
-                          setState(() => _crossfade = value);
-                        },
-                      ),
-                      if (_crossfade) ...[
-                        _buildDivider(),
-                        _buildSliderSetting(
+                    // Playback section
+                    _buildSectionHeader(context, 'Playback'),
+                    _buildSettingsCard(
+                      context,
+                      children: [
+                        _buildToggleSetting(
                           context,
-                          icon: LucideIcons.timer,
-                          title: 'Crossfade Duration',
-                          subtitle: '${_crossfadeDuration.toInt()} seconds',
-                          value: _crossfadeDuration,
-                          min: 1,
-                          max: 12,
+                          icon: LucideIcons.repeat,
+                          title: 'Gapless Playback',
+                          subtitle: 'Seamless transition between tracks',
+                          value: _gaplessPlayback,
                           onChanged: (value) {
-                            setState(() => _crossfadeDuration = value);
+                            setState(() => _gaplessPlayback = value);
                           },
                         ),
+                        _buildDivider(),
+                        _buildToggleSetting(
+                          context,
+                          icon: LucideIcons.shuffle,
+                          title: 'Crossfade',
+                          subtitle: 'Blend tracks together',
+                          value: _crossfade,
+                          onChanged: (value) {
+                            setState(() => _crossfade = value);
+                          },
+                        ),
+                        if (_crossfade) ...[
+                          _buildDivider(),
+                          _buildSliderSetting(
+                            context,
+                            icon: LucideIcons.timer,
+                            title: 'Crossfade Duration',
+                            subtitle: '${_crossfadeDuration.toInt()} seconds',
+                            value: _crossfadeDuration,
+                            min: 1,
+                            max: 12,
+                            onChanged: (value) {
+                              setState(() => _crossfadeDuration = value);
+                            },
+                          ),
+                        ],
                       ],
-                    ],
-                  ),
+                    ),
 
-                  const SizedBox(height: AppConstants.spacingLg),
+                    const SizedBox(height: AppConstants.spacingLg),
 
-                  // Display section
-                  _buildSectionHeader(context, 'Display'),
-                  _buildSettingsCard(
-                    context,
-                    children: [
-                      _buildToggleSetting(
-                        context,
-                        icon: LucideIcons.image,
-                        title: 'Show Album Art',
-                        subtitle: 'Display album artwork in player',
-                        value: _showAlbumArt,
-                        onChanged: (value) {
-                          setState(() => _showAlbumArt = value);
-                        },
-                      ),
-                      _buildDivider(),
-                      _buildNavigationSetting(
-                        context,
-                        icon: LucideIcons.palette,
-                        title: 'Theme',
-                        subtitle: 'Dark',
-                        onTap: _showThemeBottomSheet,
-                      ),
-                    ],
-                  ),
+                    // Display section
+                    _buildSectionHeader(context, 'Display'),
+                    _buildSettingsCard(
+                      context,
+                      children: [
+                        _buildToggleSetting(
+                          context,
+                          icon: LucideIcons.image,
+                          title: 'Show Album Art',
+                          subtitle: 'Display album artwork in player',
+                          value: _showAlbumArt,
+                          onChanged: (value) {
+                            setState(() => _showAlbumArt = value);
+                          },
+                        ),
+                        _buildDivider(),
+                        _buildNavigationSetting(
+                          context,
+                          icon: LucideIcons.palette,
+                          title: 'Theme',
+                          subtitle: 'Dark',
+                          onTap: _showThemeBottomSheet,
+                        ),
+                      ],
+                    ),
 
-                  const SizedBox(height: AppConstants.spacingLg),
+                    const SizedBox(height: AppConstants.spacingLg),
 
-                  // Audio section
-                  _buildSectionHeader(context, 'Audio'),
-                  _buildSettingsCard(
-                    context,
-                    children: [
-                      _buildNavigationSetting(
-                        context,
-                        icon: LucideIcons.slidersHorizontal,
-                        title: 'Equalizer',
-                        subtitle: 'Adjust audio frequencies',
-                        onTap: () {}, // TODO: Navigate to Equalizer screen
-                      ),
-                      _buildDivider(),
-                      _buildNavigationSetting(
-                        context,
-                        icon: LucideIcons.volume2,
-                        title: 'Audio Output',
-                        subtitle: 'System default',
-                        onTap: _showAudioOutputBottomSheet,
-                      ),
-                    ],
-                  ),
+                    // Audio section
+                    _buildSectionHeader(context, 'Audio'),
+                    _buildSettingsCard(
+                      context,
+                      children: [
+                        _buildNavigationSetting(
+                          context,
+                          icon: LucideIcons.slidersHorizontal,
+                          title: 'Equalizer',
+                          subtitle: 'Adjust audio frequencies',
+                          onTap: () {}, // TODO: Navigate to Equalizer screen
+                        ),
+                        _buildDivider(),
+                        _buildNavigationSetting(
+                          context,
+                          icon: LucideIcons.volume2,
+                          title: 'Audio Output',
+                          subtitle: 'System default',
+                          onTap: _showAudioOutputBottomSheet,
+                        ),
+                      ],
+                    ),
 
-                  const SizedBox(height: AppConstants.spacingLg),
+                    const SizedBox(height: AppConstants.spacingLg),
 
-                  // About section
-                  _buildSectionHeader(context, 'About'),
-                  _buildSettingsCard(
-                    context,
-                    children: [
-                      _buildNavigationSetting(
-                        context,
-                        icon: LucideIcons.info,
-                        title: 'About Flick Player',
-                        subtitle: 'Version 1.0.0',
-                        onTap: _showAboutBottomSheet,
-                      ),
-                      _buildDivider(),
-                      _buildNavigationSetting(
-                        context,
-                        icon: LucideIcons.fileText,
-                        title: 'Licenses',
-                        subtitle: 'Open source licenses',
-                        onTap: () {},
-                      ),
-                    ],
-                  ),
+                    // About section
+                    _buildSectionHeader(context, 'About'),
+                    _buildSettingsCard(
+                      context,
+                      children: [
+                        _buildNavigationSetting(
+                          context,
+                          icon: LucideIcons.info,
+                          title: 'About Flick Player',
+                          subtitle: 'Version 1.0.0',
+                          onTap: _showAboutBottomSheet,
+                        ),
+                        _buildDivider(),
+                        _buildNavigationSetting(
+                          context,
+                          icon: LucideIcons.fileText,
+                          title: 'Licenses',
+                          subtitle: 'Open source licenses',
+                          onTap: () {},
+                        ),
+                      ],
+                    ),
 
-                  // Spacing for nav bar with mini player
-                  const SizedBox(height: AppConstants.navBarHeight + 120),
-                ],
+                    // Spacing for nav bar with mini player
+                    const SizedBox(height: AppConstants.navBarHeight + 120),
+                  ],
+                ),
               ),
             ),
           ),
@@ -788,63 +790,67 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildLibraryCard(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(AppConstants.radiusLg),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(
-          sigmaX: AppConstants.glassBlurSigmaLight,
-          sigmaY: AppConstants.glassBlurSigmaLight,
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppColors.glassBackground,
-            borderRadius: BorderRadius.circular(AppConstants.radiusLg),
-            border: Border.all(color: AppColors.glassBorder, width: 1),
+    return RepaintBoundary(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppConstants.radiusLg),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(
+            sigmaX: AppConstants.glassBlurSigmaLight,
+            sigmaY: AppConstants.glassBlurSigmaLight,
           ),
-          child: Column(
-            children: [
-              // Song count info
-              _buildLibraryInfo(context),
-              _buildDivider(),
-
-              // Scanning indicator (progress shown in bottom sheet)
-              if (_isScanning) ...[
-                _buildScanningIndicator(context),
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppColors.glassBackground,
+              borderRadius: BorderRadius.circular(AppConstants.radiusLg),
+              border: Border.all(color: AppColors.glassBorder, width: 1),
+            ),
+            child: Column(
+              children: [
+                // Song count info
+                _buildLibraryInfo(context),
                 _buildDivider(),
-              ],
 
-              // Music folders list
-              ..._folders.map(
-                (folder) => Column(
-                  children: [
-                    _buildFolderItem(context, folder),
-                    if (_folders.last != folder) _buildDivider(),
-                  ],
+                // Scanning indicator (progress shown in bottom sheet)
+                if (_isScanning) ...[
+                  _buildScanningIndicator(context),
+                  _buildDivider(),
+                ],
+
+                // Music folders list
+                ..._folders.map(
+                  (folder) => RepaintBoundary(
+                    child: Column(
+                      children: [
+                        _buildFolderItem(context, folder),
+                        if (_folders.last != folder) _buildDivider(),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
 
-              if (_folders.isNotEmpty) _buildDivider(),
+                if (_folders.isNotEmpty) _buildDivider(),
 
-              // Add folder button
-              _buildActionButton(
-                context,
-                icon: LucideIcons.folderPlus,
-                title: 'Add Music Folder',
-                subtitle: 'Select a folder to scan',
-                onTap: _isScanning ? null : _addFolder,
-              ),
-
-              if (_folders.isNotEmpty) ...[
-                _buildDivider(),
+                // Add folder button
                 _buildActionButton(
                   context,
-                  icon: LucideIcons.refreshCw,
-                  title: 'Rescan Library',
-                  subtitle: 'Re-index all folders',
-                  onTap: _isScanning ? null : _rescanAllFolders,
+                  icon: LucideIcons.folderPlus,
+                  title: 'Add Music Folder',
+                  subtitle: 'Select a folder to scan',
+                  onTap: _isScanning ? null : _addFolder,
                 ),
+
+                if (_folders.isNotEmpty) ...[
+                  _buildDivider(),
+                  _buildActionButton(
+                    context,
+                    icon: LucideIcons.refreshCw,
+                    title: 'Rescan Library',
+                    subtitle: 'Re-index all folders',
+                    onTap: _isScanning ? null : _rescanAllFolders,
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -1059,30 +1065,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
     BuildContext context, {
     required List<Widget> children,
   }) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(AppConstants.radiusLg),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(
-          sigmaX: AppConstants.glassBlurSigmaLight,
-          sigmaY: AppConstants.glassBlurSigmaLight,
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppColors.glassBackground,
-            borderRadius: BorderRadius.circular(AppConstants.radiusLg),
-            border: Border.all(color: AppColors.glassBorder, width: 1),
+    return RepaintBoundary(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppConstants.radiusLg),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(
+            sigmaX: AppConstants.glassBlurSigmaLight,
+            sigmaY: AppConstants.glassBlurSigmaLight,
           ),
-          child: Column(children: children),
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppColors.glassBackground,
+              borderRadius: BorderRadius.circular(AppConstants.radiusLg),
+              border: Border.all(color: AppColors.glassBorder, width: 1),
+            ),
+            child: Column(children: children),
+          ),
         ),
       ),
     );
   }
 
   Widget _buildDivider() {
-    return Container(
-      height: 1,
-      margin: const EdgeInsets.only(left: 56 + AppConstants.spacingMd),
-      color: AppColors.glassBorder,
+    return RepaintBoundary(
+      child: Container(
+        height: 1,
+        margin: EdgeInsets.only(left: 56 + AppConstants.spacingMd),
+        color: AppColors.glassBorder,
+      ),
     );
   }
 
@@ -1094,56 +1104,58 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required bool value,
     required ValueChanged<bool> onChanged,
   }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => onChanged(!value),
-        child: Padding(
-          padding: const EdgeInsets.all(AppConstants.spacingMd),
-          child: Row(
-            children: [
-              // Icon
-              Container(
-                width: context.scaleSize(AppConstants.containerSizeSm),
-                height: context.scaleSize(AppConstants.containerSizeSm),
-                decoration: BoxDecoration(
-                  color: AppColors.glassBackgroundStrong,
-                  borderRadius: BorderRadius.circular(AppConstants.radiusSm),
+    return RepaintBoundary(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => onChanged(!value),
+          child: Padding(
+            padding: const EdgeInsets.all(AppConstants.spacingMd),
+            child: Row(
+              children: [
+                // Icon
+                Container(
+                  width: context.scaleSize(AppConstants.containerSizeSm),
+                  height: context.scaleSize(AppConstants.containerSizeSm),
+                  decoration: BoxDecoration(
+                    color: AppColors.glassBackgroundStrong,
+                    borderRadius: BorderRadius.circular(AppConstants.radiusSm),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: context.adaptiveTextSecondary,
+                    size: context.responsiveIcon(AppConstants.iconSizeMd),
+                  ),
                 ),
-                child: Icon(
-                  icon,
-                  color: context.adaptiveTextSecondary,
-                  size: context.responsiveIcon(AppConstants.iconSizeMd),
-                ),
-              ),
 
-              const SizedBox(width: AppConstants.spacingMd),
+                const SizedBox(width: AppConstants.spacingMd),
 
-              // Text
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: context.adaptiveTextPrimary,
+                // Text
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: context.adaptiveTextPrimary,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: context.adaptiveTextTertiary,
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: context.adaptiveTextTertiary,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
 
-              // Toggle switch
-              _buildCustomSwitch(value, onChanged),
-            ],
+                // Toggle switch
+                _buildCustomSwitch(value, onChanged),
+              ],
+            ),
           ),
         ),
       ),
@@ -1201,74 +1213,76 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required double max,
     required ValueChanged<double> onChanged,
   }) {
-    return Padding(
-      padding: const EdgeInsets.all(AppConstants.spacingMd),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              // Icon
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: AppColors.glassBackgroundStrong,
-                  borderRadius: BorderRadius.circular(AppConstants.radiusSm),
+    return RepaintBoundary(
+      child: Padding(
+        padding: const EdgeInsets.all(AppConstants.spacingMd),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                // Icon
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.glassBackgroundStrong,
+                    borderRadius: BorderRadius.circular(AppConstants.radiusSm),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: context.adaptiveTextSecondary,
+                    size: 20,
+                  ),
                 ),
-                child: Icon(
-                  icon,
-                  color: context.adaptiveTextSecondary,
-                  size: 20,
-                ),
-              ),
 
-              const SizedBox(width: AppConstants.spacingMd),
+                const SizedBox(width: AppConstants.spacingMd),
 
-              // Text
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: context.adaptiveTextPrimary,
+                // Text
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: context.adaptiveTextPrimary,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: context.adaptiveTextTertiary,
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: context.adaptiveTextTertiary,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
+              ],
+            ),
+
+            const SizedBox(height: AppConstants.spacingSm),
+
+            // Slider
+            SliderTheme(
+              data: SliderThemeData(
+                trackHeight: 4,
+                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+                overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+                activeTrackColor: AppColors.textPrimary,
+                inactiveTrackColor: AppColors.glassBackgroundStrong,
+                thumbColor: AppColors.textPrimary,
+                overlayColor: AppColors.textPrimary.withValues(alpha: 0.2),
               ),
-            ],
-          ),
-
-          const SizedBox(height: AppConstants.spacingSm),
-
-          // Slider
-          SliderTheme(
-            data: SliderThemeData(
-              trackHeight: 4,
-              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
-              overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
-              activeTrackColor: AppColors.textPrimary,
-              inactiveTrackColor: AppColors.glassBackgroundStrong,
-              thumbColor: AppColors.textPrimary,
-              overlayColor: AppColors.textPrimary.withValues(alpha: 0.2),
+              child: Slider(
+                value: value,
+                min: min,
+                max: max,
+                onChanged: onChanged,
+              ),
             ),
-            child: Slider(
-              value: value,
-              min: min,
-              max: max,
-              onChanged: onChanged,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1280,60 +1294,62 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required String subtitle,
     required VoidCallback onTap,
   }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(AppConstants.spacingMd),
-          child: Row(
-            children: [
-              // Icon
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: AppColors.glassBackgroundStrong,
-                  borderRadius: BorderRadius.circular(AppConstants.radiusSm),
+    return RepaintBoundary(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(AppConstants.spacingMd),
+            child: Row(
+              children: [
+                // Icon
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.glassBackgroundStrong,
+                    borderRadius: BorderRadius.circular(AppConstants.radiusSm),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: context.adaptiveTextSecondary,
+                    size: 20,
+                  ),
                 ),
-                child: Icon(
-                  icon,
-                  color: context.adaptiveTextSecondary,
+
+                const SizedBox(width: AppConstants.spacingMd),
+
+                // Text
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: context.adaptiveTextPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: context.adaptiveTextTertiary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Chevron
+                Icon(
+                  LucideIcons.chevronRight,
+                  color: context.adaptiveTextTertiary,
                   size: 20,
                 ),
-              ),
-
-              const SizedBox(width: AppConstants.spacingMd),
-
-              // Text
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: context.adaptiveTextPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: context.adaptiveTextTertiary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Chevron
-              Icon(
-                LucideIcons.chevronRight,
-                color: context.adaptiveTextTertiary,
-                size: 20,
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
