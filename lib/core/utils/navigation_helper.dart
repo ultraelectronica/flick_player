@@ -24,9 +24,6 @@ class NavigationHelper {
       return true;
     }
 
-    final navigator = Navigator.of(context);
-    if (navigator.canPop()) return true;
-
     return false;
   }
 
