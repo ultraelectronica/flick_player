@@ -12,7 +12,7 @@ enum LoopMode { off, one, all }
 
 /// Singleton service to manage global audio playback state.
 ///
-/// Uses just_audio for playback with gapless playback and crossfade support.
+/// Uses just_audio for playback with gapless playback support.
 class PlayerService {
   static final PlayerService _instance = PlayerService._internal();
 
@@ -24,7 +24,7 @@ class PlayerService {
     _init();
   }
 
-  // just_audio player with gapless and crossfade support
+  // just_audio player with gapless playback support
   final just_audio.AudioPlayer _justAudioPlayer = just_audio.AudioPlayer();
 
   final NotificationService _notificationService = NotificationService();
@@ -52,10 +52,6 @@ class PlayerService {
   // Playback Speed
   final ValueNotifier<double> playbackSpeedNotifier = ValueNotifier(1.0);
 
-  // Crossfade settings
-  final ValueNotifier<bool> crossfadeEnabledNotifier = ValueNotifier(false);
-  final ValueNotifier<double> crossfadeDurationNotifier = ValueNotifier(3.0);
-
   // Sleep Timer
   final ValueNotifier<Duration?> sleepTimerRemainingNotifier = ValueNotifier(
     null,
@@ -82,9 +78,9 @@ class PlayerService {
   }
 
   /// Initialize the audio engine.
-  /// Sets up just_audio with gapless playback and crossfade support.
+  /// Sets up just_audio with gapless playback support.
   Future<void> initAudio() async {
-    debugPrint('Initializing just_audio with gapless and crossfade support');
+    debugPrint('Initializing just_audio with gapless playback support');
 
     // Set up just_audio listeners
     _setupJustAudioListeners();
@@ -256,7 +252,6 @@ class PlayerService {
         );
         await _justAudioPlayer.setSpeed(playbackSpeedNotifier.value);
         await _updateLoopMode();
-        await _updateCrossfadeSettings();
         await _justAudioPlayer.play();
 
         _positionSaveTimer = Timer.periodic(
@@ -385,19 +380,7 @@ class PlayerService {
     }
   }
 
-  // ==================== Crossfade Settings ====================
-
-  Future<void> setCrossfadeEnabled(bool enabled) async {
-    crossfadeEnabledNotifier.value = enabled;
-    await _updateCrossfadeSettings();
-  }
-
-  Future<void> setCrossfadeDuration(double durationSecs) async {
-    crossfadeDurationNotifier.value = durationSecs.clamp(0.5, 12.0);
-    await _updateCrossfadeSettings();
-  }
-
-  /// Rebuild the current playlist with updated settings (crossfade, etc.)
+  /// Rebuild the current playlist with updated settings
   Future<void> _rebuildPlaylist() async {
     if (_playlist.isEmpty || _currentIndex < 0) return;
 
@@ -437,17 +420,6 @@ class PlayerService {
         await _justAudioPlayer.setLoopMode(just_audio.LoopMode.all);
         break;
     }
-  }
-
-  /// Update crossfade settings
-  /// Note: Crossfade support may vary by just_audio version
-  /// For now, crossfade is stored in settings but not actively applied
-  Future<void> _updateCrossfadeSettings() async {
-    // TODO: Implement crossfade when just_audio version supports it
-    // Crossfade settings are stored but not yet applied to playback
-    debugPrint(
-      'Crossfade enabled: ${crossfadeEnabledNotifier.value}, duration: ${crossfadeDurationNotifier.value}s',
-    );
   }
 
   // ==================== Shuffle/Loop Toggles ====================
@@ -553,8 +525,6 @@ class PlayerService {
     durationNotifier.dispose();
     bufferedPositionNotifier.dispose();
     playbackSpeedNotifier.dispose();
-    crossfadeEnabledNotifier.dispose();
-    crossfadeDurationNotifier.dispose();
     sleepTimerRemainingNotifier.dispose();
   }
 }
