@@ -56,8 +56,15 @@ class ParametricEqGraph extends ConsumerWidget {
               return ClipRRect(
                 borderRadius: BorderRadius.circular(AppConstants.radiusMd),
                 child: Container(
-                  color: AppColors.glassBackgroundStrong.withValues(
-                    alpha: 0.10,
+                  decoration: BoxDecoration(
+                    color: AppColors.glassBackgroundStrong.withValues(
+                      alpha: 0.10,
+                    ),
+                    borderRadius: BorderRadius.circular(AppConstants.radiusMd),
+                    border: Border.all(
+                      color: AppColors.glassBorder.withValues(alpha: 0.5),
+                      width: 1,
+                    ),
                   ),
                   child: LineChart(
                     LineChartData(
@@ -67,13 +74,7 @@ class ParametricEqGraph extends ConsumerWidget {
                       maxY: _maxDb,
                       lineTouchData: const LineTouchData(enabled: false),
                       clipData: const FlClipData.all(),
-                      borderData: FlBorderData(
-                        show: true,
-                        border: Border.all(
-                          color: AppColors.glassBorder.withValues(alpha: 0.5),
-                          width: 1,
-                        ),
-                      ),
+                      borderData: FlBorderData(show: false),
                       titlesData: const FlTitlesData(show: false),
                       gridData: FlGridData(
                         show: true,

@@ -37,10 +37,12 @@ class GraphicEqGraph extends ConsumerWidget {
               final sampleCount = math.max(96, width.floor());
 
               final lineColor = enabled
-                  ? AdaptiveColorProvider.textPrimary(context)
-                      .withValues(alpha: 0.90)
-                  : AdaptiveColorProvider.textTertiary(context)
-                      .withValues(alpha: 0.70);
+                  ? AdaptiveColorProvider.textPrimary(
+                      context,
+                    ).withValues(alpha: 0.90)
+                  : AdaptiveColorProvider.textTertiary(
+                      context,
+                    ).withValues(alpha: 0.70);
 
               final spots = _buildGraphicSpots(
                 enabled: enabled,
@@ -64,8 +66,16 @@ class GraphicEqGraph extends ConsumerWidget {
               return ClipRRect(
                 borderRadius: BorderRadius.circular(AppConstants.radiusMd),
                 child: Container(
-                  color:
-                      AppColors.glassBackgroundStrong.withValues(alpha: 0.10),
+                  decoration: BoxDecoration(
+                    color: AppColors.glassBackgroundStrong.withValues(
+                      alpha: 0.10,
+                    ),
+                    borderRadius: BorderRadius.circular(AppConstants.radiusMd),
+                    border: Border.all(
+                      color: AppColors.glassBorder.withValues(alpha: 0.5),
+                      width: 1,
+                    ),
+                  ),
                   child: LineChart(
                     LineChartData(
                       minX: _logMin,
@@ -74,13 +84,7 @@ class GraphicEqGraph extends ConsumerWidget {
                       maxY: _maxDb,
                       lineTouchData: const LineTouchData(enabled: false),
                       clipData: const FlClipData.all(),
-                      borderData: FlBorderData(
-                        show: true,
-                        border: Border.all(
-                          color: AppColors.glassBorder.withValues(alpha: 0.5),
-                          width: 1,
-                        ),
-                      ),
+                      borderData: FlBorderData(show: false),
                       titlesData: const FlTitlesData(show: false),
                       gridData: FlGridData(
                         show: true,
@@ -91,10 +95,11 @@ class GraphicEqGraph extends ConsumerWidget {
                         getDrawingHorizontalLine: (value) {
                           final isZero = value.abs() < 0.001;
                           return FlLine(
-                            color: (isZero
-                                    ? AppColors.glassBorderStrong
-                                    : AppColors.glassBorder)
-                                .withValues(alpha: isZero ? 0.8 : 0.35),
+                            color:
+                                (isZero
+                                        ? AppColors.glassBorderStrong
+                                        : AppColors.glassBorder)
+                                    .withValues(alpha: isZero ? 0.8 : 0.35),
                             strokeWidth: isZero ? 1.2 : 1.0,
                           );
                         },
@@ -104,7 +109,9 @@ class GraphicEqGraph extends ConsumerWidget {
                           // return transparent for non-guide values.
                           final alpha = _isGuideLogX(value) ? 0.25 : 0.0;
                           return FlLine(
-                            color: AppColors.glassBorder.withValues(alpha: alpha),
+                            color: AppColors.glassBorder.withValues(
+                              alpha: alpha,
+                            ),
                             strokeWidth: 1.0,
                           );
                         },
