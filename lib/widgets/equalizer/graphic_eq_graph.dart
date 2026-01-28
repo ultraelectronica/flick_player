@@ -63,6 +63,8 @@ class GraphicEqGraph extends ConsumerWidget {
                       growable: false,
                     );
 
+              final contentWidth = math.max(width * 2, 640.0);
+
               return ClipRRect(
                 borderRadius: BorderRadius.circular(AppConstants.radiusMd),
                 child: Container(
@@ -76,170 +78,177 @@ class GraphicEqGraph extends ConsumerWidget {
                       width: 1,
                     ),
                   ),
-                  child: LineChart(
-                    LineChartData(
-                      minX: _logMin,
-                      maxX: _logMax,
-                      minY: _minDb,
-                      maxY: _maxDb,
-                      lineTouchData: const LineTouchData(enabled: false),
-                      clipData: const FlClipData.all(),
-                      borderData: FlBorderData(show: false),
-                      titlesData: FlTitlesData(
-                        show: true,
-                        topTitles: const AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
-                        rightTitles: const AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
-                        leftTitles: const AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
-                        bottomTitles: AxisTitles(
-                          sideTitles: SideTitles(
-                            showTitles: true,
-                            reservedSize: 20,
-                            getTitlesWidget: (value, meta) {
-                              // Map log10(x) back to labelled frequencies.
-                              const freqs = <double>[
-                                20,
-                                50,
-                                100,
-                                200,
-                                500,
-                                1000,
-                                2000,
-                                5000,
-                                10000,
-                                20000,
-                              ];
-                              const tol = 0.03; // in log10 units
-                              double? matched;
-                              for (final hz in freqs) {
-                                final gx = _hzToX(hz);
-                                if ((value - gx).abs() <= tol) {
-                                  matched = hz;
-                                  break;
-                                }
-                              }
-                              if (matched == null) {
-                                return const SizedBox.shrink();
-                              }
-
-                              String label;
-                              if (matched >= 1000) {
-                                final k = matched / 1000.0;
-                                label =
-                                    '${k.toStringAsFixed(k >= 10 ? 0 : 1)}k';
-                              } else {
-                                label = matched.toStringAsFixed(0);
-                              }
-
-                              return Padding(
-                                padding: const EdgeInsets.only(
-                                  top: 2.0,
-                                  right: 2.0,
-                                ),
-                                child: Text(
-                                  label,
-                                  style: const TextStyle(
-                                    fontFamily: 'ProductSans',
-                                    fontSize: 9,
-                                    color: AppColors.textTertiary,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                      gridData: FlGridData(
-                        show: true,
-                        drawVerticalLine: true,
-                        drawHorizontalLine: true,
-                        verticalInterval: 1.0,
-                        horizontalInterval: 6.0,
-                        getDrawingHorizontalLine: (value) {
-                          final isZero = value.abs() < 0.001;
-                          return FlLine(
-                            color:
-                                (isZero
-                                        ? AppColors.glassBorderStrong
-                                        : AppColors.glassBorder)
-                                    .withValues(alpha: isZero ? 0.8 : 0.35),
-                            strokeWidth: isZero ? 1.2 : 1.0,
-                          );
-                        },
-                        getDrawingVerticalLine: (value) {
-                          // We draw only a handful of guide lines at key freqs.
-                          // fl_chart calls this for each 'value' step, so we
-                          // return transparent for non-guide values.
-                          final alpha = _isGuideLogX(value) ? 0.25 : 0.0;
-                          return FlLine(
-                            color: AppColors.glassBorder.withValues(
-                              alpha: alpha,
-                            ),
-                            strokeWidth: 1.0,
-                          );
-                        },
-                        checkToShowVerticalLine: _isGuideLogX,
-                      ),
-                      lineBarsData: [
-                        // Glow (thicker, blurred via shadow)
-                        LineChartBarData(
-                          spots: spots,
-                          isCurved: false,
-                          barWidth: 6.0,
-                          isStrokeCapRound: true,
-                          color: lineColor.withValues(alpha: 0.12),
-                          dotData: const FlDotData(show: false),
-                          belowBarData: BarAreaData(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    child: SizedBox(
+                      width: contentWidth,
+                      child: LineChart(
+                        LineChartData(
+                          minX: _logMin,
+                          maxX: _logMax,
+                          minY: _minDb,
+                          maxY: _maxDb,
+                          lineTouchData: const LineTouchData(enabled: false),
+                          clipData: const FlClipData.all(),
+                          borderData: FlBorderData(show: false),
+                          titlesData: FlTitlesData(
                             show: true,
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                lineColor.withValues(alpha: 0.08),
-                                lineColor.withValues(alpha: 0.00),
-                              ],
+                            topTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false),
+                            ),
+                            rightTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false),
+                            ),
+                            leftTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false),
+                            ),
+                            bottomTitles: AxisTitles(
+                              sideTitles: SideTitles(
+                                showTitles: true,
+                                reservedSize: 20,
+                                getTitlesWidget: (value, meta) {
+                                  // Map log10(x) back to labelled frequencies.
+                                  const freqs = <double>[
+                                    20,
+                                    50,
+                                    100,
+                                    200,
+                                    500,
+                                    1000,
+                                    2000,
+                                    5000,
+                                    10000,
+                                    20000,
+                                  ];
+                                  const tol = 0.03; // in log10 units
+                                  double? matched;
+                                  for (final hz in freqs) {
+                                    final gx = _hzToX(hz);
+                                    if ((value - gx).abs() <= tol) {
+                                      matched = hz;
+                                      break;
+                                    }
+                                  }
+                                  if (matched == null) {
+                                    return const SizedBox.shrink();
+                                  }
+
+                                  String label;
+                                  if (matched >= 1000) {
+                                    final k = matched / 1000.0;
+                                    label =
+                                        '${k.toStringAsFixed(k >= 10 ? 0 : 1)}k';
+                                  } else {
+                                    label = matched.toStringAsFixed(0);
+                                  }
+
+                                  return Padding(
+                                    padding: const EdgeInsets.only(
+                                      top: 2.0,
+                                      right: 2.0,
+                                    ),
+                                    child: Text(
+                                      label,
+                                      style: const TextStyle(
+                                        fontFamily: 'ProductSans',
+                                        fontSize: 9,
+                                        color: AppColors.textTertiary,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
                           ),
-                          shadow: Shadow(
-                            color: lineColor.withValues(alpha: 0.18),
-                            blurRadius: 18,
-                          ),
-                        ),
-                        // Stroke
-                        LineChartBarData(
-                          spots: spots,
-                          isCurved: false,
-                          barWidth: 2.0,
-                          isStrokeCapRound: true,
-                          color: lineColor,
-                          dotData: const FlDotData(show: false),
-                          belowBarData: BarAreaData(show: false),
-                        ),
-                        // Band points
-                        LineChartBarData(
-                          spots: dotSpots,
-                          isCurved: false,
-                          barWidth: 0,
-                          color: Colors.transparent,
-                          belowBarData: BarAreaData(show: false),
-                          dotData: FlDotData(
+                          gridData: FlGridData(
                             show: true,
-                            getDotPainter: (spot, percent, barData, index) {
-                              return FlDotCirclePainter(
-                                radius: 3.0,
-                                color: lineColor.withValues(alpha: 0.75),
-                                strokeWidth: 0,
-                                strokeColor: Colors.transparent,
+                            drawVerticalLine: true,
+                            drawHorizontalLine: true,
+                            verticalInterval: 1.0,
+                            horizontalInterval: 6.0,
+                            getDrawingHorizontalLine: (value) {
+                              final isZero = value.abs() < 0.001;
+                              return FlLine(
+                                color:
+                                    (isZero
+                                            ? AppColors.glassBorderStrong
+                                            : AppColors.glassBorder)
+                                        .withValues(alpha: isZero ? 0.8 : 0.35),
+                                strokeWidth: isZero ? 1.2 : 1.0,
                               );
                             },
+                            getDrawingVerticalLine: (value) {
+                              // We draw only a handful of guide lines at key freqs.
+                              // fl_chart calls this for each 'value' step, so we
+                              // return transparent for non-guide values.
+                              final alpha = _isGuideLogX(value) ? 0.25 : 0.0;
+                              return FlLine(
+                                color: AppColors.glassBorder.withValues(
+                                  alpha: alpha,
+                                ),
+                                strokeWidth: 1.0,
+                              );
+                            },
+                            checkToShowVerticalLine: _isGuideLogX,
                           ),
+                          lineBarsData: [
+                            // Glow (thicker, blurred via shadow)
+                            LineChartBarData(
+                              spots: spots,
+                              isCurved: false,
+                              barWidth: 6.0,
+                              isStrokeCapRound: true,
+                              color: lineColor.withValues(alpha: 0.12),
+                              dotData: const FlDotData(show: false),
+                              belowBarData: BarAreaData(
+                                show: true,
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    lineColor.withValues(alpha: 0.08),
+                                    lineColor.withValues(alpha: 0.00),
+                                  ],
+                                ),
+                              ),
+                              shadow: Shadow(
+                                color: lineColor.withValues(alpha: 0.18),
+                                blurRadius: 18,
+                              ),
+                            ),
+                            // Stroke
+                            LineChartBarData(
+                              spots: spots,
+                              isCurved: false,
+                              barWidth: 2.0,
+                              isStrokeCapRound: true,
+                              color: lineColor,
+                              dotData: const FlDotData(show: false),
+                              belowBarData: BarAreaData(show: false),
+                            ),
+                            // Band points
+                            LineChartBarData(
+                              spots: dotSpots,
+                              isCurved: false,
+                              barWidth: 0,
+                              color: Colors.transparent,
+                              belowBarData: BarAreaData(show: false),
+                              dotData: FlDotData(
+                                show: true,
+                                getDotPainter: (spot, percent, barData, index) {
+                                  return FlDotCirclePainter(
+                                    radius: 3.0,
+                                    color: lineColor.withValues(alpha: 0.75),
+                                    strokeWidth: 0,
+                                    strokeColor: Colors.transparent,
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
